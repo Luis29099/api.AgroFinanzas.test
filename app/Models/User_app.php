@@ -11,49 +11,52 @@ class User_app extends Model
     protected $fillable = ['name', 'email', 'password', 'birth_date'];
 
     protected $allowIncluded = [
-        'Crops', 'Crops.Avocado_crop', 'Crops.Coffe_crop',
-        'Recommendations', 'Finances',
-        'Animal_productions', 'Animal_productions.Finance',
-        'Animal_productions.Cattles', 'Animal_productions.Hens'
+         'crops', 'crops.avocado_crop', 'crops.coffe_crop',
+         'recommendations', 'finances',
+         'animal_productions', 'animal_productions.finance',
+         'animal_productions.cattles', 'animal_productions.hens'
     ];
 
-    public function Crops()
-    {
-        return $this->belongsToMany(Crop::class);
-    }
+    public function crops()
+{
+    return $this->belongsToMany(Crop::class, 'crop_user_app', 'id_user_app', 'id_crop');
+}
 
-    public function Recommendations()
+
+    public function recommendations()
     {
         return $this->hasMany(Recommendation::class);
     }
 
-    public function Finances()
-    {
-        return $this->belongsToMany(Finance::class);
-    }
+    public function finances()
+{
+    return $this->belongsToMany(Finance::class, 'finance_user_app', 'id_user_app', 'id_finance');
+}
 
-    public function Animal_productions()
+
+    public function animal_productions()
     {
         return $this->hasMany(Animal_production::class);
     }
 
     public function scopeIncluded(Builder $query)
     {
-        if (empty($this->allowIncluded) || empty(request('included'))) { // validamos que la lista blanca y la variable included enviada a travez de HTTP no este en vacia.
+        
+        if (empty($this->allowIncluded) || empty(request('included'))) { 
             return;
         }
 
 
         // return request('included');
 
-        $relations  = explode(',', request('included')); //['posts','relation2']//recuperamos el valor de la variable included y separa sus valores por una coma
+        $relations  = explode(',', request('included')); 
 
          //return $relations;
 
 
-        $allowIncluded = collect($this->allowIncluded); //colocamos en una colecion lo que tiene $allowIncluded en este caso = ['posts','posts.user']
+        $allowIncluded = collect($this->allowIncluded); 
 
-        foreach ($relations as $key => $relationship) { //recorremos el array de relaciones
+        foreach ($relations as $key => $relationship) { 
 
             if (!$allowIncluded->contains($relationship)) {
                 unset($relations[$key]);
@@ -62,8 +65,7 @@ class User_app extends Model
 
        // return $relations;
 
-        $query->with($relations); //se ejecuta el query con lo que tiene $relations en ultimas es el valor en la url de included
-
+        $query->with($relations); 
     }
 
 }

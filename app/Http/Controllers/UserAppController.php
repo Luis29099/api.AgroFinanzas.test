@@ -10,7 +10,7 @@ class UserAppController extends Controller
     public function index()
     {
         // $category = Category::included()->findOrFail(2);
-        $user_app=User_app::included();
+        $user_apps=User_app::included()->get();
       //  $categories=Category::included()->filter()->sort()->get();
         // $categories=Category::included()->filter()->sort()->getOrPaginate();
         //$categories=Category::included()->filter()->get();
@@ -18,7 +18,7 @@ class UserAppController extends Controller
         //$categories = Category::all();
         //$categories = Category::with(['posts.user'])->get();
 
-        return response()->json($user_app);
+        return response()->json($user_apps);
     }
 //     public function show($id)
 //     {

@@ -6,16 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Crop extends Model
 {
-    public function User_apps(){
-        return $this->belongsToMany(User_app::class);
+    public function user_apps()
+{
+    return $this->belongsToMany(User_app::class, 'crop_user_app', 'id_crop', 'id_user_app');
+}
 
-    }
-    public function Avocado_crop(){
-        return $this->hasOne('App\Models\Avocado_crop');
+    public function avocado_crop(){
+        return $this->hasOne(Avocado_crop::class);
         
     }
-    public function Coffe_crop(){
-        return $this->hasOne('App\Models\Coffe_crop');
+    public function coffe_crop(){
+        return $this->hasOne(Coffe_crop::class);
         
     }
  
