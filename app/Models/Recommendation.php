@@ -10,6 +10,9 @@ class Recommendation extends Model
     protected $fillable = ['text', 'date', 'id_user_app'];
 
     protected $allowIncluded = ['user_app','user_app.crops','user_app.crops.avocado_crop' ];
+    //  protected $allowFilter = ['id', 'text'];
+
+
     public function user_app()
 {
     return $this->belongsTo(User_app::class, 'id_user_app');
