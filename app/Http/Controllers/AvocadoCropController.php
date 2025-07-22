@@ -11,13 +11,13 @@ class AvocadoCropController extends Controller
      public function index()
     {
         // $Crop = animal_production::included()->findOrFail(2);
-        $avocado_crops=Avocado_crop::included()->get();
+        $avocadocrops=Avocado_crop::included()->get();
       //  $Crop=Crop::included()->filter()->sort()->get();
         // $Crop=Crop::included()->filter()->sort()->getOrPaginate();
         //$Crop=Crop::included()->filter()->get();
 
         //$Crop = Crop::all();
 
-        return response()->json($avocado_crops);
+        return response()->json($avocadocrops);
     }
 }

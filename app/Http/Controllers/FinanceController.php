@@ -11,9 +11,9 @@ class FinanceController extends Controller
      public function index()
     {
         // $Crop = animal_production::included()->findOrFail(2);
-        $finances=Finance::included()->get();
+        // $finances=Finance::included()->get();
       //  $Crop=Crop::included()->filter()->sort()->get();
-        // $Crop=Crop::included()->filter()->sort()->getOrPaginate();
+        $finances=Finance::included()->filter()->sort()->getOrPaginate();
         //$Crop=Crop::included()->filter()->get();
 
         //$Crop = Crop::all();

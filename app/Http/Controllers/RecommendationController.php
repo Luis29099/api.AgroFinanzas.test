@@ -11,9 +11,9 @@ class RecommendationController extends Controller
     public function index()
     {
         // $category = Category::included()->findOrFail(2);
-        $recomendation=Recommendation::included()->get();
+        // $recomendation=Recommendation::included()->get();
       //  $categories=Category::included()->filter()->sort()->get();
-        // $categories=Category::included()->filter()->sort()->getOrPaginate();
+        $recomendation=Recommendation::included()->filter()->sort()->getOrPaginate();
         //$categories=Category::included()->filter()->get();
 
         //$categories = Category::all();

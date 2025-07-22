@@ -11,9 +11,9 @@ class CropController extends Controller
      public function index()
     {
         // $Crop = animal_production::included()->findOrFail(2);
-        $crops=Crop::included()->get();
+        // $crops=Crop::included()->get();
       //  $Crop=Crop::included()->filter()->sort()->get();
-        // $Crop=Crop::included()->filter()->sort()->getOrPaginate();
+        $crops=Crop::included()->filter()->sort()->getOrPaginate();
         //$Crop=Crop::included()->filter()->get();
 
         //$Crop = Crop::all();

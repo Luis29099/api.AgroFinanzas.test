@@ -18,6 +18,7 @@ class User_app extends Model
     ];
 
     protected $allowFilter = ['id', 'email', 'password'];
+
     protected $allowSort = ['id', 'name', 'email', 'birth_date'];
 
     // Relaciones
@@ -71,6 +72,8 @@ class User_app extends Model
 
     }
 
+    //...........................................................................................
+
     public function scopeFilter(Builder $query)
     {
 
@@ -91,6 +94,8 @@ class User_app extends Model
         }
 
     }
+
+    //...................................................................................
 
     public function scopeSort(Builder $query)
     {
@@ -117,6 +122,11 @@ class User_app extends Model
         //http://api.blog.test/v1/categories?sort=name
     }
 
+
+
+
+    //...................................................................................
+
     public function scopeGetOrPaginate(Builder $query)
     {
       if (request('perPage')) {
@@ -131,11 +141,4 @@ class User_app extends Model
            return $query->get();//sino se pasa el valor de $perPage en la URL se pasan todos los registros.
         //http://api.codersfree1.test/v1/categories?perPage=2
     }
-
-
-
-
-
-
-
 }

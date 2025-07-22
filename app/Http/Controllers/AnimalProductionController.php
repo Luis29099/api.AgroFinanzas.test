@@ -11,14 +11,14 @@ class AnimalProductionController extends Controller
     public function index()
     {
         // $animal_production = animal_production::included()->findOrFail(2);
-        $animal_production=Animal_production::included()->get();
+        // $animal_production=Animal_production::included()->get();
       //  $animal_production=Animal_production::included()->filter()->sort()->get();
-        // $animal_production=Animal_production::included()->filter()->sort()->getOrPaginate();
+        $animalproduction=Animal_production::included()->filter()->sort()->getOrPaginate();
         //$animal_production=Animal_production::included()->filter()->get();
 
         //$animal_production = Animal_production::all();
 
-        return response()->json($animal_production);
+        return response()->json($animalproduction);
     }
 
 }
