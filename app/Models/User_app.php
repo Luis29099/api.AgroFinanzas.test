@@ -29,18 +29,21 @@ class User_app extends Model
 
     public function recommendations()
     {
-        return $this->hasMany(Recommendation::class, 'id_recommendations');
+        return $this->hasMany(Recommendation::class, 'id_user_app');
     }
+
 
     public function finances()
     {
         return $this->belongsToMany(Finance::class, 'finance_user_app', 'id_user_app', 'id_finance');
     }
 
+
     public function animal_productions()
     {
-        return $this->hasMany(Animal_production::class, 'id_animal_production');
+    return $this->hasMany(Animal_production::class, 'id_user_app');
     }
+
 
 
     public function scopeIncluded(Builder $query)

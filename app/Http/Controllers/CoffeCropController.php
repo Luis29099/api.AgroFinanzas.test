@@ -10,14 +10,33 @@ class CoffeCropController extends Controller
 {
     public function index()
     {
-        // $Crop = animal_production::included()->findOrFail(2);
-        $coffecrops=Coffe_crop::included()->get();
-      //  $Crop=Crop::included()->filter()->sort()->get();
-        // $Crop=Crop::included()->filter()->sort()->getOrPaginate();
-        //$Crop=Crop::included()->filter()->get();
+        // $coffecrops = Coffe_crop::included()->findOrFail(2);
+        // $coffecrops=Coffe_crop::included()->get();
+      //  $coffecrops=Coffe_crop::included()->filter()->sort()->get();
+        // $coffecrops=Coffe_crop::included()->filter()->sort()->getOrPaginate();
+        //$coffecrops=Coffe_crop::included()->filter()->get();
 
-        //$Crop = Crop::all();
+        $coffecrops = Coffe_crop::all();
 
         return response()->json($coffecrops);
     }
+     public function show($id)
+    {
+        $coffecrops = Coffe_crop::included()->findOrFail($id);
+        return response()->json($coffecrops);
+    }
+     public function store(Request $request)
+{
+    $request->validate([
+        'variety' => 'required|string|max:255',
+        'estimated_production' => 'required|string|max:255',
+    ]);
+
+
+    $coffecrops = Coffe_crop::create([
+        'variety' => $request->variety,
+        'estimated_production' => $request->estimated_production,
+    ]);
+    return response()->json($coffecrops, 201);
+}
 }

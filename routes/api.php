@@ -18,9 +18,9 @@ use Illuminate\Support\Facades\Route;
  Route::post('user_apps', [UserAppController::class,'store'])->name('api.v1.userapps.store');
  Route::get('user_apps/{user_app}', [UserAppController::class,'show'])->name('api.v1.userapps.show');
 
-Route::get('recomendations', [RecommendationController::class,'index'])->name('api.v1.recomendation.index');
- Route::post('recomendations', [RecommendationController::class,'store'])->name('api.v1.recomendation.store');
- Route::get('recomendations/{recomendation}', [RecommendationController::class,'show'])->name('api.v1.recomendation.show');
+Route::get('recommendations', [RecommendationController::class,'index'])->name('api.v1.recommendations.index');
+ Route::post('recommendations', [RecommendationController::class,'store'])->name('api.v1.recommendations.store');
+ Route::get('recommendations/{recommendation}', [RecommendationController::class,'show'])->name('api.v1.recommendations.show');
 
  Route::get('animal_productions', [AnimalProductionController::class,'index'])->name('api.v1.animal_production.index');
  Route::post('animal_productions', [AnimalProductionController::class,'store'])->name('api.v1.animal_production.store');

@@ -10,14 +10,35 @@ class AvocadoCropController extends Controller
 {
      public function index()
     {
-        // $Crop = animal_production::included()->findOrFail(2);
-        $avocadocrops=Avocado_crop::included()->get();
-      //  $Crop=Crop::included()->filter()->sort()->get();
-        // $Crop=Crop::included()->filter()->sort()->getOrPaginate();
-        //$Crop=Crop::included()->filter()->get();
+        // $avocadocrops = Avocado_crop::included()->findOrFail(2);
+        // $avocadocrops=Avocado_crop::included()->get();
+      //  $avocadocrops=Avocado_crop::included()->filter()->sort()->get();
+        // $avocadocrops=Avocado_crop::included()->filter()->sort()->getOrPaginate();
+        //$avocadocrops=Avocado_crop::included()->filter()->get();
 
-        //$Crop = Crop::all();
+        $avocadocrops = Avocado_crop::all();
 
         return response()->json($avocadocrops);
     }
+    public function show($id)
+    {
+        $avocadocrops = Avocado_crop::included()->findOrFail($id);
+        return response()->json($avocadocrops);
+    }
+    public function store(Request $request)
+{
+    $request->validate([
+        'variety' => 'required|string|max:255',
+        'estimated_production' => 'required|string|max:255',
+       
+       
+    ]);
+
+
+    $avocadocrops = Avocado_crop::create([
+        'variety' => $request->Variety,
+        'estimated_production' => $request->estimated_production,
+    ]);
+    return response()->json($avocadocrops, 201);
+}
 }

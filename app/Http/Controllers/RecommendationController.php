@@ -13,12 +13,34 @@ class RecommendationController extends Controller
         // $category = Category::included()->findOrFail(2);
         // $recomendation=Recommendation::included()->get();
       //  $categories=Category::included()->filter()->sort()->get();
-        $recomendation=Recommendation::included()->filter()->sort()->getOrPaginate();
+        // $recomendation=Recommendation::included()->filter()->sort()->getOrPaginate();
         //$categories=Category::included()->filter()->get();
 
-        //$categories = Category::all();
+        $recommendation = Recommendation::all();
         //$categories = Category::with(['posts.user'])->get();
 
-        return response()->json($recomendation);
+        return response()->json($recommendation);
     }
+     public function show($id)
+    {
+        $recommendation = Recommendation::included()->findOrFail($id);
+        return response()->json($recommendation);
+    }
+    public function store(Request $request)
+{
+    $request->validate([
+        'text' => 'required|string|max:255',
+        'date' => 'required|email|unique:user_apps,email',
+        
+    ]);
+
+
+    $recomendation = Recommendation::create([
+        'text' => $request->text,
+        'date' => $request->date,
+        
+    ]);
+
+    return response()->json($recomendation, 201);
+}
 }
