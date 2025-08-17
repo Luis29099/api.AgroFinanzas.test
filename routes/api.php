@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AnimalProductionController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AvocadoCropController;
 use App\Http\Controllers\CattleController;
 use App\Http\Controllers\CoffeCropController;
@@ -50,3 +51,8 @@ Route::get('recommendations', [RecommendationController::class,'index'])->name('
  Route::get('avocado_crops', [AvocadoCropController::class,'index'])->name('api.v1.avocado_crops.index');
  Route::post('avocado_crops', [AvocadoCropController::class,'store'])->name('api.v1.avocado_crops.store');
  Route::get('avocado_crops/{avocado_crop}', [AvocadoCropController::class,'show'])->name('api.v1.avocado_crops.show');
+
+
+
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
