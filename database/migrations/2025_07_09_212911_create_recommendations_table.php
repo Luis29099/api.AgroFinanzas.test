@@ -9,18 +9,18 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+     public function up(): void
     {
         Schema::create('recommendations', function (Blueprint $table) {
             $table->id();
-            $table->string('text');
-            $table->string('date');
-            $table->unsignedBigInteger('id_user_app');
-             $table-> foreign('id_user_app')
-            ->references('id')
-            ->on('user_apps')
-            ->onDelete('cascade')
-            ->onUpdate('cascade');
+            $table->text('text');
+            $table->timestamp('date')->default(now()); 
+            $table->unsignedBigInteger('id_user_app')->nullable();
+            $table->foreign('id_user_app')
+                ->references('id')
+                ->on('user_apps')
+                ->onDelete('set null')
+                ->onUpdate('cascade');
             $table->timestamps();
         });
     }

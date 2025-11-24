@@ -8,7 +8,7 @@ use PhpParser\Node\Stmt\Return_;
 
 class User_app extends Model
 {
-    protected $fillable = ['name', 'email', 'password', 'birth_date'];
+    protected $fillable = ['name', 'email', 'password', 'birth_date','profile_photo'];
     protected $hidden = ['password'];
 
     protected $allowIncluded = [

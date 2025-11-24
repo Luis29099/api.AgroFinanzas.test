@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Recommendation extends Model
 {
-    protected $fillable = ['text', 'date', 'id_user_app'];
+    protected $fillable = ['text', 'id_user_app'];
+
 
     protected $allowIncluded = ['user_app','user_app.crops','user_app.crops.avocado_crop' ];// .....................................
 
@@ -17,10 +18,11 @@ class Recommendation extends Model
 
     protected $allowSort = ['id', 'date', 'id_user_app'];
 
-    public function user_app()
+    public function user()
 {
     return $this->belongsTo(User_app::class, 'id_user_app');
 }
+
 
 
 public function scopeIncluded(Builder $query)

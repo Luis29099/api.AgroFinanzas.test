@@ -39,5 +39,37 @@ class AuthController extends Controller
             'message' => 'Credenciales inválidas',
         ], 401);
     }
+public function updateProfile(Request $request, $id)
+{
+    $user = User_app::findOrFail($id);
+
+    $request->validate([
+        'name' => 'sometimes|string|max:255',
+        'email' => 'sometimes|email',
+        'birth_date' => 'sometimes|date',
+        'profile_photo' => 'sometimes|image|mimes:jpg,jpeg,png|max:2048',
+    ]);
+
+    // Subir foto si viene
+    if ($request->hasFile('profile_photo')) {
+
+        $photoName = time() . '_' . $request->file('profile_photo')->getClientOriginalName();
+        $request->file('profile_photo')->storeAs('public/profile_photos', $photoName);
+
+        $user->profile_photo = $photoName;
+    }
+
+    // actualizar otros campos
+    if ($request->name) $user->name = $request->name;
+    if ($request->email) $user->email = $request->email;
+    if ($request->birth_date) $user->birth_date = $request->birth_date;
+
+    $user->save();
+
+    return response()->json([
+        'message' => 'Perfil actualizado',
+        'user' => $user
+    ]);
+}
 
 }

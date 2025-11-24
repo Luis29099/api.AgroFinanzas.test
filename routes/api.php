@@ -39,9 +39,9 @@ Route::get('recommendations', [RecommendationController::class,'index'])->name('
  Route::post('crops', [CropController::class,'store'])->name('api.v1.crops.store');
  Route::get('crops/{crop}', [CropController::class,'show'])->name('api.v1.crops.show');
 
- Route::get('finances', [FinanceController::class,'index'])->name('api.v1.finances.index');
- Route::post('finances', [FinanceController::class,'store'])->name('api.v1.finances.store');
- Route::get('finances/{finance}', [FinanceController::class,'show'])->name('api.v1.finances.show');
+//  Route::get('finances', [FinanceController::class,'index'])->name('api.v1.finances.index');
+//  Route::post('finances', [FinanceController::class,'store'])->name('api.v1.finances.store');
+//  Route::get('finances/{finance}', [FinanceController::class,'show'])->name('api.v1.finances.show');
 
   Route::get('coffe_crops', [CoffeCropController::class,'index'])->name('api.v1.coffe_crops.index');
  Route::post('coffe_crops', [CoffeCropController::class,'store'])->name('api.v1.coffe_crops.store');
@@ -56,3 +56,20 @@ Route::get('recommendations', [RecommendationController::class,'index'])->name('
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/user_apps/{id}/update-profile', [AuthController::class, 'updateProfile']);
+
+
+
+ Route::get('finances', [FinanceController::class, 'index']); 
+   Route::post('finances', [FinanceController::class, 'store']); 
+   Route::put('finances/{id}', [FinanceController::class, 'update']);
+Route::delete('finances/{id}', [FinanceController::class, 'destroy']);
+
+//    Route::delete('finances',[FinanceController::class,'destoy']);
+//    Route::put('finances',[FinanceController::class,'update']);
+//conexion
+
+
+// Route::get('/recommendations', [RecommendationController::class, 'index']);
+// Route::post('/recommendations', [RecommendationController::class, 'store']);
+

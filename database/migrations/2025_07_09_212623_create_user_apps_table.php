@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('email');
             $table->string('password');
             $table->string('birth_date');
+            $table->string('profile_photo')->nullable();
+
             $table->timestamps();
             
         });

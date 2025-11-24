@@ -2,47 +2,118 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Finance;
 use Illuminate\Http\Request;
 
 class FinanceController extends Controller
 {
-     public function index()
+    // MÉTODO: Retorna todos los registros de finanzas en JSON
+    public function index()
     {
-        // $Crop = animal_production::included()->findOrFail(2);
-        // $finances=Finance::included()->get();
-      //  $Crop=Crop::included()->filter()->sort()->get();
-        // $finances=Finance::included()->filter()->sort()->getOrPaginate();
-        //$Crop=Crop::included()->filter()->get();
-
-        $finances = Finance::all();
-
-        return response()->json($finances);
-    }
-     public function show($id)
-    {
-        $finances = Finance::included()->findOrFail($id);
-        return response()->json($finances);
-    }
-    public function store(Request $request)
-{
-    $request->validate([
-        'income' => 'required|string|max:255',
-        'expense' => 'required|string|max:255',
-        'profit' => 'required|string|max:255',
-        'date' => 'required|string|max:255',
+        // Se asume que 'Finance' es tu modelo de Eloquent
+        // Usamos los scopes incluidos en tu modelo
+        $finances = Finance::filter()->sort()->included()->getOrPaginate(); 
         
+        // Retorna la colección como un array JSON
+        return response()->json($finances);
+    }
+    
+    /**
+     * Almacena un nuevo registro de finanza (income/expense).
+     * El nombre del método es 'store' para coincidir con la convención de rutas.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function store(Request $request) // <-- ¡CORRECCIÓN! El nombre ahora es 'store'
+    {
+        // Validación unificada con el frontend: min:0.01
+        $data = $request->validate([
+            'type' => 'required|in:income,expense',
+            'amount' => 'required|numeric|min:0.01', // <-- CORRECCIÓN: Aseguramos min:0.01
+            'date' => 'required|date',
+            'description' => 'nullable|string',
+        ]);
+
+        if (empty($data)) {
+             return response()->json([
+                'success' => false,
+                'message' => 'Datos de entrada vacíos o inválidos.'
+            ], 400);
+        }
+
+        try {
+            // Se usa Finance::create() gracias a la configuración $fillable en el modelo
+            $finance = Finance::create($data);
+
+            return response()->json([
+                'success' => true,
+                'finance' => $finance
+            ], 201); // 201 Created
+            
+        } catch (\Exception $e) {
+             // Retorna el error de BD para depuración
+             return response()->json([
+                'success' => false,
+                'message' => 'Error al guardar en la base de datos: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    // Dejo el método storeAjax por si acaso, aunque ahora llama a 'store'
+    public function storeAjax(Request $request)
+    {
+        return $this->store($request);
+    }
+
+    // El método 'indexView' se mantiene para compatibilidad con vistas Blade
+    public function indexView()
+    {
+        $finances = Finance::all();
+        return view('finances.index', compact('finances'));
+    }
+    public function update(Request $request, $id)
+{
+    $finance = Finance::find($id);
+
+    if (!$finance) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Registro no encontrado'
+        ], 404);
+    }
+
+    $data = $request->validate([
+        'type' => 'in:income,expense',
+        'amount' => 'numeric|min:0.01',
+        'date' => 'date',
+        'description' => 'nullable|string',
     ]);
 
+    $finance->update($data);
 
-    $finances = Finance::create([
-        'income' => $request->income,
-        'expense' => $request->expense,
-        'profit' => $request->profit,
-        'date' => $request->date,
-    ]);
-
-    return response()->json($finances, 201);
+    return response()->json([
+        'success' => true,
+        'message' => 'Registro actualizado correctamente',
+        'finance' => $finance
+    ], 200);
 }
+public function destroy($id)
+{
+    $finance = Finance::find($id);
+
+    if (!$finance) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Registro no encontrado'
+        ], 404);
+    }
+
+    $finance->delete();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Registro eliminado correctamente'
+    ], 200);
+}
+
 }
