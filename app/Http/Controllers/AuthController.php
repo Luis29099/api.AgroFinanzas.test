@@ -52,12 +52,10 @@ public function updateProfile(Request $request, $id)
 
     // Subir foto si viene
     if ($request->hasFile('profile_photo')) {
-
-        $photoName = time() . '_' . $request->file('profile_photo')->getClientOriginalName();
-        $request->file('profile_photo')->storeAs('public/profile_photos', $photoName);
-
-        $user->profile_photo = $photoName;
-    }
+         $photoName = time() . '_' . $request->file('profile_photo')->getClientOriginalName(); $request->file('profile_photo')->storeAs('public/profile_photos', $photoName);
+         // 🚨 CAMBIO DE RUTA: NECESITAS HACER ESTE CAMBIO EN TU PROYECTO DE API
+         $user->profile_photo = 'profile_photos/' . $photoName; // <-- ¡Añadir subcarpeta!
+ }
 
     // actualizar otros campos
     if ($request->name) $user->name = $request->name;
