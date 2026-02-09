@@ -19,9 +19,9 @@ use Illuminate\Support\Facades\Route;
  Route::post('user_apps', [UserAppController::class,'store'])->name('api.v1.userapps.store');
  Route::get('user_apps/{user_app}', [UserAppController::class,'show'])->name('api.v1.userapps.show');
 
-Route::get('recommendations', [RecommendationController::class,'index'])->name('api.v1.recommendations.index');
- Route::post('recommendations', [RecommendationController::class,'store'])->name('api.v1.recommendations.store');
- Route::get('recommendations/{recommendation}', [RecommendationController::class,'show'])->name('api.v1.recommendations.show');
+Route::get('recommendations', [RecommendationController::class,'index']);
+Route::post('recommendations', [RecommendationController::class,'store']);
+Route::get('recommendations/{recommendation}', [RecommendationController::class,'show']);
 
  Route::get('animal_productions', [AnimalProductionController::class,'index'])->name('api.v1.animal_production.index');
  Route::post('animal_productions', [AnimalProductionController::class,'store'])->name('api.v1.animal_production.store');
@@ -56,7 +56,15 @@ Route::get('recommendations', [RecommendationController::class,'index'])->name('
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/user_apps/{id}/update-profile', [AuthController::class, 'updateProfile']);
+
+
+
+
+Route::post(
+    '/user_apps/{id}/update-profile',
+    [AuthController::class, 'updateProfile']
+);
+
 
 
 

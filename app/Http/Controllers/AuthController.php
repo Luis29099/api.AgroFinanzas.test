@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use App\Http\Controllers\Controller;
 use App\Models\User_app;
 use Illuminate\Http\Request;
@@ -52,9 +53,23 @@ public function updateProfile(Request $request, $id)
 
     // Subir foto si viene
     if ($request->hasFile('profile_photo')) {
-         $photoName = time() . '_' . $request->file('profile_photo')->getClientOriginalName(); $request->file('profile_photo')->storeAs('public/profile_photos', $photoName);
-         // 🚨 CAMBIO DE RUTA: NECESITAS HACER ESTE CAMBIO EN TU PROYECTO DE API
-         $user->profile_photo = 'profile_photos/' . $photoName; // <-- ¡Añadir subcarpeta!
+         $photoName = time() . '_' . $request->file('profile_photo')->getClientOriginalName(); if ($request->hasFile('profile_photo')) {
+
+    $uploadedFileUrl = Cloudinary::upload(
+        $request->file('profile_photo')->getRealPath(),
+        [
+            'folder' => 'AgroFinanzas/profile_photos',
+            'transformation' => [
+                'width' => 300,
+                'height' => 300,
+                'crop' => 'fill'
+            ]
+        ]
+    )->getSecurePath();
+
+    $user->profile_photo = $uploadedFileUrl;
+}
+ // <-- ¡Añadir subcarpeta!
  }
 
     // actualizar otros campos

@@ -7,12 +7,18 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use PhpParser\Node\Stmt\Return_;
-use Illuminate\Support\Facades\Storage;
+
 
 class User_app extends Model
 {
     use HasFactory, ApiScopes;
-    protected $fillable = ['name', 'email', 'password', 'birth_date','profile_photo'];
+    protected $fillable = [
+    'name',
+    'email',
+    'password',
+    'birth_date',
+    'profile_photo', // 👈 DEBE ESTAR
+];
 
     protected $hidden = ['password'];
 
@@ -25,18 +31,13 @@ class User_app extends Model
         'animal_productions.cattles', 'animal_productions.hens'
     ];
 
-    public function getProfilePhotoUrlAttribute()
-    {
-        // Verifica si existe la ruta en la DB y si el archivo existe en el disco 'public'
-        if ($this->profile_photo && Storage::disk('public')->exists($this->profile_photo)) {
-            // Genera la URL completa usando la ayuda de Storage::url()
-            // Esto devolverá algo como http://api.AgroFinanzas.test/storage/profile_photos/nombre.jpg
-            return url('storage/' . $this->profile_photo);
-        }
-        
-        // Devuelve una imagen por defecto si no hay foto
-        return null; // O la URL de tu imagen por defecto si la tienes en el API
-    }
+    
+
+public function getProfilePhotoUrlAttribute()
+{
+    return $this->profile_photo; // ya es una URL pública
+}
+
     
     protected $allowFilter = ['id', 'email', 'password'];
 
