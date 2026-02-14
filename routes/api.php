@@ -73,11 +73,27 @@ Route::post(
    Route::put('finances/{id}', [FinanceController::class, 'update']);
 Route::delete('finances/{id}', [FinanceController::class, 'destroy']);
 
-//    Route::delete('finances',[FinanceController::class,'destoy']);
-//    Route::put('finances',[FinanceController::class,'update']);
+   Route::delete('finances',[FinanceController::class,'destoy']);
+   Route::put('finances',[FinanceController::class,'update']);
 //conexion
 
 
 // Route::get('/recommendations', [RecommendationController::class, 'index']);
 // Route::post('/recommendations', [RecommendationController::class, 'store']);
 
+Route::prefix('finances')->group(function () {
+    
+    // CRUD básico
+    Route::get('/', [FinanceController::class, 'index']);           // GET    /api/finances
+    Route::post('/', [FinanceController::class, 'store']);          // POST   /api/finances
+    Route::get('/{id}', [FinanceController::class, 'show']);        // GET    /api/finances/{id}
+    Route::put('/{id}', [FinanceController::class, 'update']);      // PUT    /api/finances/{id}
+    Route::delete('/{id}', [FinanceController::class, 'destroy']);  // DELETE /api/finances/{id}
+    
+    // Rutas especiales
+    Route::get('/statistics/summary', [FinanceController::class, 'statistics']); // GET /api/finances/statistics/summary
+    Route::patch('/{id}/pay-installment', [FinanceController::class, 'payDebtInstallment']); // PATCH /api/finances/{id}/pay-installment
+    
+    // Método legacy AJAX
+    Route::post('/ajax', [FinanceController::class, 'storeAjax']); // POST /api/finances/ajax
+});
