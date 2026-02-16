@@ -15,6 +15,8 @@ class Finance extends Model
      * Campos que se pueden asignar masivamente
      */
     protected $fillable = [
+        'user_app_id', // 🔥 ESTE ES CRÍTICO - SIN ESTO NO SE GUARDA
+        
         // Campos básicos (income/expense)
         'type', 
         'amount', 
@@ -66,13 +68,14 @@ class Finance extends Model
     /**
      * Relaciones permitidas para incluir en la API
      */
-    protected $allowIncluded = ['user_apps', 'animal_production'];
+    protected $allowIncluded = ['userApp', 'user_apps', 'animal_production'];
     
     /**
      * Campos permitidos para filtrar
      */
     protected $allowFilter = [
         'id',
+        'user_app_id',
         'type',
         'amount',
         'date',
@@ -94,8 +97,14 @@ class Finance extends Model
         'created_at'
     ];
 
+    // 🔥 RELACIÓN UNO A MUCHOS CON USER_APP (NUEVA)
+    public function userApp()
+    {
+        return $this->belongsTo(User_app::class, 'user_app_id');
+    }
+
     /**
-     * Relación con usuarios
+     * Relación con usuarios (TABLA PIVOT - ANTIGUA, mantener por compatibilidad)
      */
     public function user_apps()
     {
@@ -108,6 +117,12 @@ class Finance extends Model
     public function animal_production()
     {
         return $this->belongsTo(Animal_production::class, 'id_animal_production');
+    }
+
+    // 🔥 SCOPE PARA FILTRAR POR USUARIO (NUEVO)
+    public function scopeForUser($query, $userId)
+    {
+        return $query->where('user_app_id', $userId);
     }
 
     /**

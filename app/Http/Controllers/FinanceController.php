@@ -5,25 +5,48 @@ namespace App\Http\Controllers;
 use App\Models\Finance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class FinanceController extends Controller
 {
     /**
-     * Retorna todos los registros de finanzas en JSON
+     * Retorna todos los registros de finanzas del usuario
+     * 🔥 FILTRADO POR USUARIO
      */
-    public function index()
+    public function index(Request $request)
     {
-        $finances = Finance::filter()->sort()->included()->getOrPaginate(); 
+        // Obtener user_id del query param
+        $userId = $request->query('user_id');
+        
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Se requiere user_id como parámetro'
+            ], 400);
+        }
+
+        // Filtrar solo las finanzas del usuario
+        $finances = Finance::where('user_app_id', $userId)
+                          ->filter()
+                          ->sort()
+                          ->included()
+                          ->getOrPaginate();
+        
         return response()->json($finances);
     }
     
     /**
-     * Almacena un nuevo registro de finanza (cualquier tipo)
+     * Almacena un nuevo registro de finanza
+     * 🔥 AHORA REQUIERE user_app_id
      */
     public function store(Request $request)
     {
-        // Validación base para todos los tipos
+        // Log para debugging
+        Log::info('Store Finance Request:', $request->all());
+
+        // Validación base
         $baseRules = [
+            'user_app_id' => 'required|exists:user_apps,id', // 🔥 REQUERIDO
             'type' => 'required|in:income,expense,investment,debt,inventory,costs',
             'amount' => 'required|numeric|min:0.01',
             'date' => 'required|date',
@@ -71,13 +94,13 @@ class FinanceController extends Controller
                 break;
         }
 
-        // Combinar reglas
         $rules = array_merge($baseRules, $specificRules);
         
-        // Validar
         $validator = Validator::make($request->all(), $rules);
         
         if ($validator->fails()) {
+            Log::error('Validation failed:', $validator->errors()->toArray());
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Error de validación',
@@ -86,8 +109,10 @@ class FinanceController extends Controller
         }
 
         try {
-            // Crear el registro
+            // 🔥 CREAR CON user_app_id
             $finance = Finance::create($request->all());
+
+            Log::info('Finance created:', ['id' => $finance->id, 'user_app_id' => $finance->user_app_id]);
 
             return response()->json([
                 'success' => true,
@@ -96,6 +121,11 @@ class FinanceController extends Controller
             ], 201);
             
         } catch (\Exception $e) {
+            Log::error('Error creating finance:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Error al guardar en la base de datos: ' . $e->getMessage()
@@ -105,15 +135,28 @@ class FinanceController extends Controller
     
     /**
      * Actualiza un registro existente
+     * 🔥 VERIFICA QUE EL REGISTRO PERTENEZCA AL USUARIO
      */
     public function update(Request $request, $id)
     {
-        $finance = Finance::find($id);
+        $userId = $request->query('user_id');
+        
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Se requiere user_id como parámetro'
+            ], 400);
+        }
+
+        // Buscar solo si pertenece al usuario
+        $finance = Finance::where('id', $id)
+                         ->where('user_app_id', $userId)
+                         ->first();
 
         if (!$finance) {
             return response()->json([
                 'success' => false,
-                'message' => 'Registro no encontrado'
+                'message' => 'Registro no encontrado o no autorizado'
             ], 404);
         }
 
@@ -126,7 +169,6 @@ class FinanceController extends Controller
             'category' => 'nullable|string|max:100',
         ];
 
-        // Validaciones específicas según el tipo
         $specificRules = [];
         $type = $request->type ?? $finance->type;
         
@@ -198,15 +240,27 @@ class FinanceController extends Controller
     
     /**
      * Elimina un registro
+     * 🔥 VERIFICA QUE EL REGISTRO PERTENEZCA AL USUARIO
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $finance = Finance::find($id);
+        $userId = $request->query('user_id');
+        
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Se requiere user_id como parámetro'
+            ], 400);
+        }
+
+        $finance = Finance::where('id', $id)
+                         ->where('user_app_id', $userId)
+                         ->first();
 
         if (!$finance) {
             return response()->json([
                 'success' => false,
-                'message' => 'Registro no encontrado'
+                'message' => 'Registro no encontrado o no autorizado'
             ], 404);
         }
 
@@ -228,15 +282,27 @@ class FinanceController extends Controller
 
     /**
      * Obtiene un registro específico
+     * 🔥 VERIFICA QUE EL REGISTRO PERTENEZCA AL USUARIO
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $finance = Finance::find($id);
+        $userId = $request->query('user_id');
+        
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Se requiere user_id como parámetro'
+            ], 400);
+        }
+
+        $finance = Finance::where('id', $id)
+                         ->where('user_app_id', $userId)
+                         ->first();
 
         if (!$finance) {
             return response()->json([
                 'success' => false,
-                'message' => 'Registro no encontrado'
+                'message' => 'Registro no encontrado o no autorizado'
             ], 404);
         }
 
@@ -247,18 +313,28 @@ class FinanceController extends Controller
     }
 
     /**
-     * Obtiene estadísticas generales
+     * Obtiene estadísticas generales del usuario
+     * 🔥 FILTRADO POR USUARIO
      */
-    public function statistics()
+    public function statistics(Request $request)
     {
+        $userId = $request->query('user_id');
+        
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Se requiere user_id como parámetro'
+            ], 400);
+        }
+
         try {
             $stats = [
-                'total_income' => Finance::incomes()->sum('amount'),
-                'total_expense' => Finance::expenses()->sum('amount'),
-                'total_investment' => Finance::investments()->sum('amount'),
-                'total_debt' => Finance::debts()->sum('amount'),
-                'total_inventory_value' => Finance::inventory()->sum('amount'),
-                'total_production_costs' => Finance::costs()->sum('amount'),
+                'total_income' => Finance::where('user_app_id', $userId)->incomes()->sum('amount'),
+                'total_expense' => Finance::where('user_app_id', $userId)->expenses()->sum('amount'),
+                'total_investment' => Finance::where('user_app_id', $userId)->investments()->sum('amount'),
+                'total_debt' => Finance::where('user_app_id', $userId)->debts()->sum('amount'),
+                'total_inventory_value' => Finance::where('user_app_id', $userId)->inventory()->sum('amount'),
+                'total_production_costs' => Finance::where('user_app_id', $userId)->costs()->sum('amount'),
             ];
 
             $stats['balance'] = $stats['total_income'] - $stats['total_expense'];
@@ -279,15 +355,28 @@ class FinanceController extends Controller
 
     /**
      * Pagar cuota de una deuda
+     * 🔥 VERIFICA QUE LA DEUDA PERTENEZCA AL USUARIO
      */
     public function payDebtInstallment(Request $request, $id)
     {
-        $finance = Finance::find($id);
-
-        if (!$finance || $finance->type !== 'debt') {
+        $userId = $request->query('user_id');
+        
+        if (!$userId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Deuda no encontrada'
+                'message' => 'Se requiere user_id como parámetro'
+            ], 400);
+        }
+
+        $finance = Finance::where('id', $id)
+                         ->where('user_app_id', $userId)
+                         ->where('type', 'debt')
+                         ->first();
+
+        if (!$finance) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Deuda no encontrada o no autorizada'
             ], 404);
         }
 
@@ -318,15 +407,6 @@ class FinanceController extends Controller
         }
     }
 
-    /**
-     * Vista para Blade (compatibilidad)
-     */
-    public function indexView()
-    {
-        $finances = Finance::all();
-        return view('finances.index', compact('finances'));
-    }
-    
     /**
      * Método legacy para AJAX
      */
