@@ -16,10 +16,10 @@ return new class extends Migration
         $table->text('text');
         $table->string('category')->default('recomendacion');
         $table->timestamp('date')->default(now());
-        $table->unsignedBigInteger('id_user_app')->nullable();
-        $table->foreign('id_user_app')
+        $table->unsignedBigInteger('user_id')->nullable();
+        $table->foreign('user_id')
             ->references('id')
-            ->on('user_apps')
+            ->on('users')
             ->onDelete('set null')
             ->onUpdate('cascade');
         $table->timestamps();

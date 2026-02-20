@@ -10,37 +10,34 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Finance extends Model
 {
     use HasFactory, ApiScopes;
-    
-    /**
-     * Campos que se pueden asignar masivamente
-     */
+
     protected $fillable = [
-        'user_app_id', // 🔥 ESTE ES CRÍTICO - SIN ESTO NO SE GUARDA
-        
+        'user_id',
+
         // Campos básicos (income/expense)
-        'type', 
-        'amount', 
-        'date', 
+        'type',
+        'amount',
+        'date',
         'description',
         'category',
-        
+
         // Campos para INVERSIONES
         'asset_name',
         'depreciation_years',
-        
+
         // Campos para DEUDAS
         'creditor',
         'interest_rate',
         'due_date',
         'installments',
         'paid_installments',
-        
+
         // Campos para INVENTARIO
         'product_name',
         'quantity',
         'unit',
         'unit_cost',
-        
+
         // Campos para COSTOS DE PRODUCCIÓN
         'crop_name',
         'area',
@@ -48,9 +45,6 @@ class Finance extends Model
         'cost_per_unit',
     ];
 
-    /**
-     * Tipos de datos para casting
-     */
     protected $casts = [
         'amount' => 'float',
         'date' => 'date',
@@ -64,18 +58,12 @@ class Finance extends Model
         'area' => 'float',
         'cost_per_unit' => 'float',
     ];
-    
-    /**
-     * Relaciones permitidas para incluir en la API
-     */
-    protected $allowIncluded = ['userApp', 'user_apps', 'animal_production'];
-    
-    /**
-     * Campos permitidos para filtrar
-     */
+
+    protected $allowIncluded = ['user', 'animal_production'];
+
     protected $allowFilter = [
         'id',
-        'user_app_id',
+        'user_id',
         'type',
         'amount',
         'date',
@@ -85,10 +73,7 @@ class Finance extends Model
         'product_name',
         'crop_name'
     ];
-    
-    /**
-     * Campos permitidos para ordenar
-     */
+
     protected $allowSort = [
         'id',
         'type',
@@ -97,146 +82,95 @@ class Finance extends Model
         'created_at'
     ];
 
-    // 🔥 RELACIÓN UNO A MUCHOS CON USER_APP (NUEVA)
-    public function userApp()
+    // Relaciones
+    public function user()
     {
-        return $this->belongsTo(User_app::class, 'user_app_id');
+        return $this->belongsTo(User::class);
     }
 
-    /**
-     * Relación con usuarios (TABLA PIVOT - ANTIGUA, mantener por compatibilidad)
-     */
-    public function user_apps()
-    {
-        return $this->belongsToMany(User_app::class, 'finance_user_app', 'id_finance', 'id_user_app');
-    }
-
-    /**
-     * Relación con producción animal
-     */
     public function animal_production()
     {
         return $this->belongsTo(Animal_production::class, 'id_animal_production');
     }
 
-    // 🔥 SCOPE PARA FILTRAR POR USUARIO (NUEVO)
+    // Scopes
     public function scopeForUser($query, $userId)
     {
-        return $query->where('user_app_id', $userId);
+        return $query->where('user_id', $userId);
     }
 
-    /**
-     * Scope para filtrar por tipo de transacción
-     */
     public function scopeOfType($query, $type)
     {
         return $query->where('type', $type);
     }
 
-    /**
-     * Scope para obtener ingresos
-     */
     public function scopeIncomes($query)
     {
         return $query->where('type', 'income');
     }
 
-    /**
-     * Scope para obtener gastos
-     */
     public function scopeExpenses($query)
     {
         return $query->where('type', 'expense');
     }
 
-    /**
-     * Scope para obtener inversiones
-     */
     public function scopeInvestments($query)
     {
         return $query->where('type', 'investment');
     }
 
-    /**
-     * Scope para obtener deudas
-     */
     public function scopeDebts($query)
     {
         return $query->where('type', 'debt');
     }
 
-    /**
-     * Scope para obtener inventario
-     */
     public function scopeInventory($query)
     {
         return $query->where('type', 'inventory');
     }
 
-    /**
-     * Scope para obtener costos de producción
-     */
     public function scopeCosts($query)
     {
         return $query->where('type', 'costs');
     }
 
-    /**
-     * Accessor: Calcula el progreso de pago de una deuda (porcentaje)
-     */
+    // Accessors
     public function getDebtProgressAttribute()
     {
         if ($this->type !== 'debt' || !$this->installments) {
             return null;
         }
-        
         return round(($this->paid_installments / $this->installments) * 100, 2);
     }
 
-    /**
-     * Accessor: Calcula el monto restante de una deuda
-     */
     public function getRemainingDebtAttribute()
     {
         if ($this->type !== 'debt' || !$this->installments) {
             return null;
         }
-        
         $paidAmount = ($this->amount / $this->installments) * $this->paid_installments;
         return $this->amount - $paidAmount;
     }
 
-    /**
-     * Accessor: Calcula el valor total del inventario
-     */
     public function getTotalInventoryValueAttribute()
     {
         if ($this->type !== 'inventory' || !$this->quantity || !$this->unit_cost) {
             return $this->amount;
         }
-        
         return $this->quantity * $this->unit_cost;
     }
 
-    /**
-     * Mutator: Formatea el nombre del activo en mayúsculas
-     */
+    // Mutators
     public function setAssetNameAttribute($value)
     {
         $this->attributes['asset_name'] = $value ? ucwords(strtolower($value)) : null;
     }
 
-    /**
-     * Mutator: Formatea el nombre del cultivo
-     */
     public function setCropNameAttribute($value)
     {
         $this->attributes['crop_name'] = $value ? ucwords(strtolower($value)) : null;
     }
 
-    /**
-     * Mutator: Formatea el nombre del producto
-     */
     public function setProductNameAttribute($value)
     {
         $this->attributes['product_name'] = $value ? ucwords(strtolower($value)) : null;

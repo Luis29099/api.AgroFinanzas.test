@@ -10,12 +10,12 @@ return new class extends Migration
     {
         Schema::table('finances', function (Blueprint $table) {
             // Agregar columna user_app_id
-            $table->unsignedBigInteger('user_app_id')->after('id')->nullable();
+            $table->unsignedBigInteger('user_id')->after('id')->nullable();
             
             // Agregar foreign key
-            $table->foreign('user_app_id')
+            $table->foreign('user_id')
                   ->references('id')
-                  ->on('user_apps')
+                  ->on('users')
                   ->onDelete('cascade');
         });
     }
@@ -23,8 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('finances', function (Blueprint $table) {
-            $table->dropForeign(['user_app_id']);
-            $table->dropColumn('user_app_id');
+            $table->dropForeign(['user_id']);
+            $table->dropColumn('user_id');
         });
     }
 };

@@ -4,25 +4,23 @@ namespace App\Models;
 
 use App\Traits\ApiScopes;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Animal_production extends Model
-
 {
     use HasFactory, ApiScopes;
-    protected $fillable = ['type', 'quantity', 'acquisition_date', 'id_user_app'];
 
-    protected $allowIncluded = ['user_app', 'finance', 'cattles', 'hens'];//...........................
+    protected $fillable = ['type', 'quantity', 'acquisition_date', 'user_id'];
 
-    protected $allowFilter = ['id','type', 'acquisition_date','quantity'];  
+    protected $allowIncluded = ['user', 'finance', 'cattles', 'hens'];
 
-    protected $allowSort = ['id', 'type', 'acquisition_date','quantity'];
+    protected $allowFilter = ['id', 'type', 'acquisition_date', 'quantity'];
 
-   
-    public function user_app()
+    protected $allowSort = ['id', 'type', 'acquisition_date', 'quantity'];
+
+    public function user()
     {
-        return $this->belongsTo(User_app::class, 'id_user_app');
+        return $this->belongsTo(User::class);
     }
 
     public function finance()
@@ -39,15 +37,4 @@ class Animal_production extends Model
     {
         return $this->hasMany(Hen::class, 'id_animal_production');
     }
-
-
-   
-
-
-
-    
-
-
-    
-
 }

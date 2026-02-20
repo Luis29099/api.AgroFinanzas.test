@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('crop_user_app', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_user_app');
-            $table-> foreign('id_user_app')
+            $table->unsignedBigInteger('user_id');
+            $table-> foreign('user_id')
             ->references('id')
-            ->on('user_apps')
+            ->on('users')
             ->onDelete('cascade')
             ->onUpdate('cascade');
             

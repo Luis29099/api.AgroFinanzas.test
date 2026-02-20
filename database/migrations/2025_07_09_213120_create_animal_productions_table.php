@@ -16,10 +16,10 @@ return new class extends Migration
             $table->string('type');
             $table->string('quantity');
             $table->string('acquisition_date');
-            $table->unsignedBigInteger('id_user_app');
-             $table-> foreign('id_user_app')
+            $table->unsignedBigInteger('user_id');
+             $table-> foreign('user_id')
             ->references('id')
-            ->on('user_apps')
+            ->on('users')
             ->onDelete('cascade')
             ->onUpdate('cascade');
             $table->timestamps();
