@@ -18,18 +18,18 @@ use App\Http\Controllers\AdminFinancesController;
 use App\Http\Controllers\AdminCommentsController;
 
 // ── USUARIOS ──────────────────────────────────────────────────
-Route::get('user_apps',            [UserController::class, 'index'])->name('api.v1.users.index');
-Route::post('user_apps',           [UserController::class, 'store'])->name('api.v1.users.store');
-Route::get('user_apps/{user_app}', [UserController::class, 'show'])->name('api.v1.users.show');
+Route::get('user_apps',            [UserController::class, 'index']);
+Route::post('user_apps',           [UserController::class, 'store']);
+Route::get('user_apps/{user_app}', [UserController::class, 'show']);
 
 // ── AUTH ──────────────────────────────────────────────────────
-Route::post('/register',                        [AuthController::class, 'register']);
-Route::post('/login',                           [AuthController::class, 'login']);
-Route::post('/verify-code',                     [AuthController::class, 'verifyCode']);
-Route::post('/resend-code',                     [AuthController::class, 'resendCode']);
-Route::post('/users/{id}/update-profile',       [AuthController::class, 'updateProfile']);
-Route::post('/users/{id}/send-delete-code',     [AuthController::class, 'sendDeleteCode']);
-Route::delete('/users/{id}',                    [AuthController::class, 'deleteAccount']);
+Route::post('/register',                    [AuthController::class, 'register']);
+Route::post('/login',                       [AuthController::class, 'login']);
+Route::post('/verify-code',                 [AuthController::class, 'verifyCode']);
+Route::post('/resend-code',                 [AuthController::class, 'resendCode']);
+Route::post('/users/{id}/update-profile',   [AuthController::class, 'updateProfile']);
+Route::post('/users/{id}/send-delete-code', [AuthController::class, 'sendDeleteCode']);
+Route::delete('/users/{id}',                [AuthController::class, 'deleteAccount']);
 
 // ── RECOMENDACIONES ───────────────────────────────────────────
 Route::get('recommendations',                  [RecommendationController::class, 'index']);
@@ -43,37 +43,37 @@ Route::patch('/notifications/{id}/read',           [NotificationController::clas
 Route::patch('/notifications/{userId}/read-all',   [NotificationController::class, 'markAllRead']);
 
 // ── PRODUCCIÓN ANIMAL ─────────────────────────────────────────
-Route::get('animal_productions',                     [AnimalProductionController::class, 'index'])->name('api.v1.animal_production.index');
-Route::post('animal_productions',                    [AnimalProductionController::class, 'store'])->name('api.v1.animal_production.store');
-Route::get('animal_productions/{animal_production}', [AnimalProductionController::class, 'show'])->name('api.v1.animal_production.show');
+Route::get('animal_productions',                     [AnimalProductionController::class, 'index']);
+Route::post('animal_productions',                    [AnimalProductionController::class, 'store']);
+Route::get('animal_productions/{animal_production}', [AnimalProductionController::class, 'show']);
 
 // ── GALLINAS ──────────────────────────────────────────────────
-Route::get('hens',        [HenController::class, 'index'])->name('api.v1.hen.index');
-Route::post('hens',       [HenController::class, 'store'])->name('api.v1.hen.store');
-Route::get('hens/{hen}',  [HenController::class, 'show'])->name('api.v1.hen.show');
+Route::get('hens',       [HenController::class, 'index']);
+Route::post('hens',      [HenController::class, 'store']);
+Route::get('hens/{hen}', [HenController::class, 'show']);
 
-// ✅ GANADO — Control individual por animal ────────────────────
-Route::get('cattles',                  [CattleController::class, 'index']);
-Route::post('cattles',                 [CattleController::class, 'store']);
-Route::get('cattles/{id}',             [CattleController::class, 'show']);
-Route::post('cattles/{id}',            [CattleController::class, 'update']);   // POST porque lleva foto (multipart)
-Route::delete('cattles/{id}',          [CattleController::class, 'destroy']);
-Route::post('cattles/{id}/birth',      [CattleController::class, 'registerBirth']); // ← Registrar nacimiento
+// ── GANADO ────────────────────────────────────────────────────
+Route::get('cattles',             [CattleController::class, 'index']);
+Route::post('cattles',            [CattleController::class, 'store']);
+Route::get('cattles/{id}',        [CattleController::class, 'show']);
+Route::post('cattles/{id}',       [CattleController::class, 'update']);
+Route::delete('cattles/{id}',     [CattleController::class, 'destroy']);
+Route::post('cattles/{id}/birth', [CattleController::class, 'registerBirth']);
 
 // ── CULTIVOS ──────────────────────────────────────────────────
-Route::get('crops',         [CropController::class, 'index'])->name('api.v1.crops.index');
-Route::post('crops',        [CropController::class, 'store'])->name('api.v1.crops.store');
-Route::get('crops/{crop}',  [CropController::class, 'show'])->name('api.v1.crops.show');
+Route::get('crops',        [CropController::class, 'index']);
+Route::post('crops',       [CropController::class, 'store']);
+Route::get('crops/{crop}', [CropController::class, 'show']);
 
 // ── CAFÉ ──────────────────────────────────────────────────────
-Route::get('coffe_crops',               [CoffeCropController::class, 'index'])->name('api.v1.coffe_crops.index');
-Route::post('coffe_crops',              [CoffeCropController::class, 'store'])->name('api.v1.coffe_crops.store');
-Route::get('coffe_crops/{coffe_crop}',  [CoffeCropController::class, 'show'])->name('api.v1.coffe_crops.show');
+Route::get('coffe_crops',              [CoffeCropController::class, 'index']);
+Route::post('coffe_crops',             [CoffeCropController::class, 'store']);
+Route::get('coffe_crops/{coffe_crop}', [CoffeCropController::class, 'show']);
 
 // ── AGUACATE ──────────────────────────────────────────────────
-Route::get('avocado_crops',                 [AvocadoCropController::class, 'index'])->name('api.v1.avocado_crops.index');
-Route::post('avocado_crops',                [AvocadoCropController::class, 'store'])->name('api.v1.avocado_crops.store');
-Route::get('avocado_crops/{avocado_crop}',  [AvocadoCropController::class, 'show'])->name('api.v1.avocado_crops.show');
+Route::get('avocado_crops',                [AvocadoCropController::class, 'index']);
+Route::post('avocado_crops',               [AvocadoCropController::class, 'store']);
+Route::get('avocado_crops/{avocado_crop}', [AvocadoCropController::class, 'show']);
 
 // ── FINANZAS ──────────────────────────────────────────────────
 Route::prefix('finances')->group(function () {
@@ -87,28 +87,24 @@ Route::prefix('finances')->group(function () {
     Route::post('/ajax',                  [FinanceController::class, 'storeAjax']);
 });
 
-// ── LOGIN (sin middleware) ────────────────────────────────────
-Route::post('/admin/login',  [AdminAuthController::class, 'login']);
+// ── ADMIN LOGIN (sin middleware) ──────────────────────────────
+Route::post('/admin/login', [AdminAuthController::class, 'login']);
 
-// ── RUTAS PROTEGIDAS (requieren token de admin) ───────────────
+// ── ADMIN PROTEGIDAS (requieren token) ────────────────────────
 Route::middleware(['admin.token'])->prefix('admin')->group(function () {
 
-    // Auth
     Route::post('/logout', [AdminAuthController::class, 'logout']);
     Route::get('/me',      [AdminAuthController::class, 'me']);
 
-    // Usuarios
-    Route::get('/users',                [AdminUsersController::class, 'index']);
-    Route::get('/users/{id}',           [AdminUsersController::class, 'show']);
-    Route::patch('/users/{id}/toggle',  [AdminUsersController::class, 'toggle']);
-    Route::delete('/users/{id}',        [AdminUsersController::class, 'destroy']);
+    Route::get('/users',               [AdminUsersController::class, 'index']);
+    Route::get('/users/{id}',          [AdminUsersController::class, 'show']);
+    Route::patch('/users/{id}/toggle', [AdminUsersController::class, 'toggle']);
+    Route::delete('/users/{id}',       [AdminUsersController::class, 'destroy']);
 
-    // Finanzas
-    Route::get('/finances',                    [AdminFinancesController::class, 'index']);
-    Route::get('/finances/user/{userId}',      [AdminFinancesController::class, 'byUser']);
+    Route::get('/finances',               [AdminFinancesController::class, 'index']);
+    Route::get('/finances/user/{userId}', [AdminFinancesController::class, 'byUser']);
 
-    // Comentarios
-    Route::get('/comments',                    [AdminCommentsController::class, 'index']);
-    Route::get('/comments/user/{userId}',      [AdminCommentsController::class, 'byUser']);
-    Route::delete('/comments/{id}',            [AdminCommentsController::class, 'destroy']);
+    Route::get('/comments',              [AdminCommentsController::class, 'index']);
+    Route::get('/comments/user/{userId}',[AdminCommentsController::class, 'byUser']);
+    Route::delete('/comments/{id}',      [AdminCommentsController::class, 'destroy']);
 });
