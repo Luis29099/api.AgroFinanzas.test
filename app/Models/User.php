@@ -6,18 +6,19 @@ use App\Traits\ApiScopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, ApiScopes;
+    use HasFactory, Notifiable, ApiScopes, HasApiTokens;
 
     protected $fillable = [
-    'name', 'email', 'password', 'birth_date', 'profile_photo',
-    'phone', 'gender', 'experience_years',
-    'verification_code',        // ← agregar
-    'verification_expires_at',  // ← agregar
-    'is_verified', 
-];
+        'name', 'email', 'password', 'birth_date', 'profile_photo',
+        'phone', 'gender', 'experience_years',
+        'verification_code',
+        'verification_expires_at',
+        'is_verified',
+    ];
 
     protected $hidden = ['password'];
 
@@ -39,7 +40,6 @@ class User extends Authenticatable
         return $this->profile_photo;
     }
 
-    // Relaciones
     public function crops()
     {
         return $this->belongsToMany(Crop::class, 'crop_user_app', 'user_id', 'id_crop');
@@ -64,7 +64,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
         ];
     }
 }

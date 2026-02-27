@@ -103,7 +103,14 @@ class AuthController extends Controller
             'verification_expires_at' => null,
         ]);
 
-        return response()->json(['success' => true, 'message' => '¡Cuenta verificada exitosamente!', 'user' => $user]);
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => '¡Cuenta verificada exitosamente!',
+            'token'   => $token,
+            'user'    => $user,
+        ]);
     }
 
     // ── REENVIAR CÓDIGO ───────────────────────────────────────
@@ -140,7 +147,18 @@ class AuthController extends Controller
         return response()->json(['success' => true, 'message' => 'Código reenviado exitosamente.']);
     }
 
-    // ── ENVIAR CÓDIGO PARA ELIMINAR CUENTA (solo verificados) ─
+    // ── LOGOUT ────────────────────────────────────────────────
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Sesión cerrada exitosamente.',
+        ]);
+    }
+
+    // ── ENVIAR CÓDIGO PARA ELIMINAR CUENTA ───────────────────
     public function sendDeleteCode(Request $request, $id)
     {
         $user = User::findOrFail($id);
@@ -171,14 +189,11 @@ class AuthController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // Cuenta NO verificada → eliminar directo sin código
         if (!$user->is_verified) {
-            // Los comentarios quedan como anónimos (set null en user_id)
             $user->delete();
             return response()->json(['success' => true, 'message' => 'Cuenta eliminada.']);
         }
 
-        // Cuenta verificada → requiere código de confirmación
         $validator = Validator::make($request->all(), [
             'code' => 'required|string|size:6',
         ], [
@@ -190,17 +205,14 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
         }
 
-        // Verificar expiración
         if (now()->isAfter($user->verification_expires_at)) {
             return response()->json(['success' => false, 'message' => 'El código expiró. Solicita uno nuevo.', 'expired' => true], 422);
         }
 
-        // Verificar código
         if ($user->verification_code !== $request->code) {
             return response()->json(['success' => false, 'message' => 'El código es incorrecto.'], 422);
         }
 
-        // ✅ Eliminar — comentarios quedan con user_id = null (anónimos)
         $user->delete();
 
         return response()->json(['success' => true, 'message' => 'Cuenta eliminada correctamente.']);
@@ -238,7 +250,14 @@ class AuthController extends Controller
             ], 403);
         }
 
-        return response()->json(['success' => true, 'message' => 'Login exitoso', 'user' => $user]);
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Login exitoso',
+            'token'   => $token,
+            'user'    => $user,
+        ]);
     }
 
     // ── ACTUALIZAR PERFIL ─────────────────────────────────────
