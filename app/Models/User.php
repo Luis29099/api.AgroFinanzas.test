@@ -22,7 +22,12 @@ class User extends Authenticatable
 
     protected $hidden = ['password'];
 
-    protected $appends = ['profile_photo_url'];
+    protected $appends = ['profile_photo_url', 'role'];
+
+    public function getRoleAttribute()
+    {
+        return 'user';
+    }
 
     protected $allowIncluded = [
         'crops', 'crops.avocado_crop', 'crops.coffe_crop',
@@ -58,6 +63,11 @@ class User extends Authenticatable
     public function animal_productions()
     {
         return $this->hasMany(Animal_production::class, 'user_id');
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'user_id');
     }
 
     protected function casts(): array
