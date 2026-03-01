@@ -47,6 +47,42 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/ajax',                  [FinanceController::class, 'storeAjax']);
     });
 
+    // Rutas para que el frontend pueda llamar a /client/income, /client/expense, etc.
+    Route::prefix('client')->group(function () {
+        Route::get('/finances', [FinanceController::class, 'index']);
+        
+        // Atajos para creación mapeando el 'type'
+        Route::post('/income', function (Request $request) {
+            $request->merge(['type' => 'income']);
+            return app(FinanceController::class)->store($request);
+        });
+        Route::post('/expense', function (Request $request) {
+            $request->merge(['type' => 'expense']);
+            return app(FinanceController::class)->store($request);
+        });
+        Route::post('/investment', function (Request $request) {
+            $request->merge(['type' => 'investment']);
+            return app(FinanceController::class)->store($request);
+        });
+        Route::post('/debt', function (Request $request) {
+            $request->merge(['type' => 'debt']);
+            return app(FinanceController::class)->store($request);
+        });
+        Route::post('/inventory', function (Request $request) {
+            $request->merge(['type' => 'inventory']);
+            return app(FinanceController::class)->store($request);
+        });
+        Route::post('/costs', function (Request $request) {
+            $request->merge(['type' => 'costs']);
+            return app(FinanceController::class)->store($request);
+        });
+
+        // Operaciones sobre registros específicos
+        Route::put('/finances/{id}',    [FinanceController::class, 'update']);
+        Route::delete('/finances/{id}', [FinanceController::class, 'destroy']);
+        Route::patch('/debt/{id}/pay',  [FinanceController::class, 'payDebtInstallment']);
+    });
+
     // ── GANADO ────────────────────────────────────────────────────
     Route::get('cattles',             [CattleController::class, 'index']);
     Route::post('cattles',            [CattleController::class, 'store']);
