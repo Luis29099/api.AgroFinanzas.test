@@ -67,10 +67,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/notifications/{id}/read',           [NotificationController::class, 'markRead']);
     Route::patch('/notifications/{userId}/read-all',   [NotificationController::class, 'markAllRead']);
 
-    // ── RECOMENDACIONES ───────────────────────────────────────────
+    // ── RECOMENDACIONES / COMUNIDAD ─────────────────────────────
     Route::get('recommendations',                  [RecommendationController::class, 'index']);
     Route::post('recommendations',                 [RecommendationController::class, 'store']);
     Route::get('recommendations/{recommendation}', [RecommendationController::class, 'show']);
+
+    Route::prefix('comments')->group(function () {
+        Route::get('/',              [RecommendationController::class, 'index']);
+        Route::post('/',             [RecommendationController::class, 'store']);
+        Route::get('/{id}',          [RecommendationController::class, 'show']);
+        Route::delete('/{id}',       [RecommendationController::class, 'destroy']);
+        // Funcionalidades extra que el frontend pide:
+        Route::post('/{id}/reply',   [RecommendationController::class, 'reply']);
+        Route::post('/{id}/like',    [RecommendationController::class, 'toggleLike']);
+    });
 
     // ── PRODUCCIÓN ANIMAL ─────────────────────────────────────────
     Route::get('animal_productions',                     [AnimalProductionController::class, 'index']);

@@ -15,6 +15,16 @@ class Recommendation extends Model
         'parent_id', 'media_url', 'media_type',
     ];
 
+    protected $appends = ['content', 'replies_count'];
+
+    public function getContentAttribute() { 
+        return $this->text; 
+    }
+
+    public function getRepliesCountAttribute() { 
+        return $this->replies()->count(); 
+    }
+
     protected $allowIncluded = ['user', 'replies'];
 
     public function user()    { return $this->belongsTo(User::class); }
