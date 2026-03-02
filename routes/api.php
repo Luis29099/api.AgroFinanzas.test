@@ -16,6 +16,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminUsersController;
 use App\Http\Controllers\AdminFinancesController;
 use App\Http\Controllers\AdminCommentsController;
+use App\Http\Controllers\PreciosController;
 
 // ── AUTH ──────────────────────────────────────────────────────
 Route::post('/register',                        [AuthController::class, 'register']);
@@ -107,3 +108,4 @@ Route::middleware(['admin.token'])->prefix('admin')->group(function () {
     Route::get('/comments/user/{userId}', [AdminCommentsController::class, 'byUser']);
     Route::delete('/comments/{id}',       [AdminCommentsController::class, 'destroy']);
 });
+Route::get('precios', [PreciosController::class, 'index']);
