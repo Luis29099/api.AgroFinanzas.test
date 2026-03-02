@@ -15,7 +15,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "railsware/mailtrap-php": "^3.10",
-        "resend/resend-laravel": "^1.2"
+        "resend/resend-laravel": "^1.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
