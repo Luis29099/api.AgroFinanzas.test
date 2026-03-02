@@ -85,6 +85,16 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ── GANADO ────────────────────────────────────────────────────
+    // ── GANADO / HATO ───────────────────────────────────────────
+    Route::get('hato',                [CattleController::class, 'index']);
+    Route::post('hato',               [CattleController::class, 'store']);
+    Route::get('hato/mothers',        [CattleController::class, 'mothers']);
+    Route::post('hato/birth',         [CattleController::class, 'registerBirth']);
+    Route::get('hato/{id}',           [CattleController::class, 'show']);
+    Route::post('hato/{id}',          [CattleController::class, 'update']);
+    Route::delete('hato/{id}',        [CattleController::class, 'destroy']);
+
+    // Compatibilidad legacy cattles
     Route::get('cattles',             [CattleController::class, 'index']);
     Route::post('cattles',            [CattleController::class, 'store']);
     Route::get('cattles/{id}',        [CattleController::class, 'show']);
@@ -93,10 +103,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('cattles/{id}/birth', [CattleController::class, 'registerBirth']);
 
     // ── NOTIFICACIONES ────────────────────────────────────────────
-    Route::get('/notificaciones',              [NotificationController::class, 'getMyNotifications']);
-    Route::get('/notificaciones/no-leidas',    [NotificationController::class, 'getMyUnreadCount']);
-    Route::post('/notificaciones/leer-todas',  [NotificationController::class, 'markAllMyRead']);
-    Route::post('/notificaciones/{id}/leer',   [NotificationController::class, 'markRead']);
+    Route::get('notificaciones',              [NotificationController::class, 'getMyNotifications']);
+    Route::get('notificaciones/no-leidas',    [NotificationController::class, 'getMyUnreadCount']);
+    Route::post('notificaciones/leer-todas',  [NotificationController::class, 'markAllMyRead']);
+    Route::post('notificaciones/{id}/leer',   [NotificationController::class, 'markRead']);
 
     // Rutas con ID para administración o propósitos específicos
     Route::get('/notifications/{userId}',              [NotificationController::class, 'index']);
@@ -109,15 +119,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('recommendations',                 [RecommendationController::class, 'store']);
     Route::get('recommendations/{recommendation}', [RecommendationController::class, 'show']);
 
-    Route::prefix('comments')->group(function () {
-        Route::get('/',              [RecommendationController::class, 'index']);
-        Route::post('/',             [RecommendationController::class, 'store']);
-        Route::get('/{id}',          [RecommendationController::class, 'show']);
-        Route::delete('/{id}',       [RecommendationController::class, 'destroy']);
-        // Funcionalidades extra que el frontend pide:
-        Route::post('/{id}/reply',   [RecommendationController::class, 'reply']);
-        Route::post('/{id}/like',    [RecommendationController::class, 'toggleLike']);
-    });
+    // Alias para comentarios
+    Route::get('comments',              [RecommendationController::class, 'index']);
+    Route::post('comments',             [RecommendationController::class, 'store']);
+    Route::get('comments/{id}',          [RecommendationController::class, 'show']);
+    Route::delete('comments/{id}',       [RecommendationController::class, 'destroy']);
+    Route::post('comments/{id}/reply',   [RecommendationController::class, 'reply']);
+    Route::post('comments/{id}/like',    [RecommendationController::class, 'toggleLike']);
 
     // ── PRODUCCIÓN ANIMAL ─────────────────────────────────────────
     Route::get('animal_productions',                     [AnimalProductionController::class, 'index']);
