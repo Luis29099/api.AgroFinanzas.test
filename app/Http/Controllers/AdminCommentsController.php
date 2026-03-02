@@ -39,6 +39,7 @@ class AdminCommentsController extends Controller
             'success'  => true,
             'comments' => $comments,
             'total'    => $comments->count(),
+            'users'    => User::select('id', 'name')->get()
         ]);
     }
 

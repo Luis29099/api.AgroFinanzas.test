@@ -53,6 +53,25 @@ class AdminUsersController extends Controller
     {
         $user = User::findOrFail($id);
 
+        $finances = Finance::where('user_id', $id)->latest()->get();
+        $summary = [
+            'total_income'     => $finances->where('type', 'income')->sum('amount'),
+            'total_expense'    => $finances->where('type', 'expense')->sum('amount'),
+            'total_investment' => $finances->where('type', 'investment')->sum('amount'),
+            'total_debt'       => $finances->where('type', 'debt')->sum('amount'),
+            'total_inventory'  => $finances->where('type', 'inventory')->sum('amount'),
+            'balance'          => $finances->where('type', 'income')->sum('amount') - $finances->where('type', 'expense')->sum('amount'),
+            'records'          => $finances->count(),
+        ];
+
+        $comments = \App\Models\Recommendation::where('user_id', $id)->latest()->get()->map(function($r) {
+            return [
+                'id'      => $r->id,
+                'content' => $r->text ?? '',
+                'created_at' => $r->created_at?->format('d/m/Y H:i'),
+            ];
+        });
+
         return response()->json([
             'success' => true,
             'user'    => [
@@ -63,6 +82,11 @@ class AdminUsersController extends Controller
                 'created_at'    => $user->created_at?->format('d/m/Y H:i'),
                 'profile_photo' => $user->profile_photo ?? null,
             ],
+            'finances' => [
+                'finances' => $finances,
+                'summary'  => $summary,
+            ],
+            'comments' => $comments,
         ]);
     }
 

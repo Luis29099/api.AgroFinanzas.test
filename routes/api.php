@@ -16,6 +16,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminUsersController;
 use App\Http\Controllers\AdminFinancesController;
 use App\Http\Controllers\AdminCommentsController;
+use App\Http\Controllers\AdminDashboardController;
 use Illuminate\Http\Request;
 
 // ── AUTH ──────────────────────────────────────────────────────
@@ -159,6 +160,7 @@ Route::post('/admin/login', [AdminAuthController::class, 'login']);
 Route::middleware(['admin.token'])->prefix('admin')->group(function () {
     Route::post('/logout', [AdminAuthController::class, 'logout']);
     Route::get('/me',      [AdminAuthController::class, 'me']);
+    Route::get('/dashboard', [AdminDashboardController::class, 'index']);
 
     Route::get('/users',               [AdminUsersController::class, 'index']);
     Route::get('/users/{id}',          [AdminUsersController::class, 'show']);
