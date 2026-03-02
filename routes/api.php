@@ -25,6 +25,11 @@ Route::post('/login',       [AuthController::class, 'login']);
 Route::post('/verify-code', [AuthController::class, 'verifyCode']);
 Route::post('/resend-code', [AuthController::class, 'resendCode']);
 
+use App\Http\Controllers\ClimaController;
+
+// ── EXTERNAS / PÚBLICAS ───────────────────────────────────────
+Route::get('/clima', [ClimaController::class, 'getClima']);
+
 // ── PROTECTED USER ROUTES ─────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout',                          [AuthController::class, 'logout']);
