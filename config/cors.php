@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
-    'allowed_origins' => ['http://localhost:5173'], // Explicitly allow frontend
+    'allowed_origins' => ['http://localhost:5173', 'https://agrosfinance.com'], // Explicitly allow frontend
 
     'allowed_origins_patterns' => [],
 
