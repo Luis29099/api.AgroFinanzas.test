@@ -11,22 +11,50 @@ class FinanceController extends Controller
 {
     public function index(Request $request)
     {
-        $userId = $request->query('user_id');
+        $userId = auth()->id() ?? $request->query('user_id');
 
         if (!$userId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Se requiere user_id como parámetro'
-            ], 400);
+                'message' => 'Se requiere autenticación o user_id'
+            ], 401);
         }
 
-        $finances = Finance::where('user_id', $userId)
-                          ->filter()
-                          ->sort()
-                          ->included()
-                          ->getOrPaginate();
+        $query = Finance::where('user_id', $userId);
+        
+        // El frontend envía ?filter=all o ?filter=income, etc.
+        // Pero el Trait ApiScopes espera que 'filter' sea un array (ej: ?filter[type]=income).
+        // Capturamos el parámetro manualmente si es un string.
+        $rawFilter = $request->query('filter');
+        
+        if (is_string($rawFilter) && $rawFilter !== 'all') {
+            $query->where('type', $rawFilter);
+        } elseif (is_array($rawFilter)) {
+            // Si el frontend eventualmente usa el formato del Trait
+            $query->filter();
+        }
 
-        return response()->json($finances);
+        $finances = $query->latest()->get();
+
+        // Calcular totales para el frontend
+        $totalIncome = Finance::where('user_id', $userId)->incomes()->sum('amount');
+        $totalExpense = Finance::where('user_id', $userId)->expenses()->sum('amount');
+        $totalInvestment = Finance::where('user_id', $userId)->investments()->sum('amount');
+        $totalDebt = Finance::where('user_id', $userId)->debts()->sum('amount');
+        $totalInventory = Finance::where('user_id', $userId)->inventory()->sum('amount');
+        $totalCosts = Finance::where('user_id', $userId)->costs()->sum('amount');
+
+        return response()->json([
+            'finances' => $finances,
+            'filter' => is_string($rawFilter) ? $rawFilter : 'all',
+            'totalIncome' => (float)$totalIncome,
+            'totalExpense' => (float)$totalExpense,
+            'totalInvestment' => (float)$totalInvestment,
+            'totalDebt' => (float)$totalDebt,
+            'totalInventory' => (float)$totalInventory,
+            'totalCosts' => (float)$totalCosts,
+            'balance' => (float)($totalIncome - $totalExpense)
+        ]);
     }
 
     public function store(Request $request)
@@ -34,11 +62,11 @@ class FinanceController extends Controller
         Log::info('Store Finance Request:', $request->all());
 
         $baseRules = [
-            'user_id'     => 'required|exists:users,id',
+            'user_id'     => 'sometimes|nullable|exists:users,id',
             'type'        => 'required|in:income,expense,investment,debt,inventory,costs',
             'amount'      => 'required|numeric|min:0.01',
             'date'        => 'required|date',
-            'description' => 'nullable|string|max:500',
+            'description' => 'nullable|string|max:5000',
             'category'    => 'nullable|string|max:100',
         ];
 
@@ -95,6 +123,9 @@ class FinanceController extends Controller
         }
 
         try {
+            // Inject authenticated user ID
+            $request->merge(['user_id' => auth()->id()]);
+            
             $finance = Finance::create($request->all());
 
             Log::info('Finance created:', ['id' => $finance->id, 'user_id' => $finance->user_id]);

@@ -11,25 +11,36 @@ use Cloudinary\Configuration\Configuration;
 
 class RecommendationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(
-            Recommendation::with(['user', 'replies.user'])
-                ->whereNull('parent_id')
-                ->latest()
-                ->get()
-        );
+        $query = Recommendation::with(['user', 'replies.user'])
+            ->whereNull('parent_id');
+
+        if ($request->category) {
+            $query->where('category', $request->category);
+        }
+
+        return response()->json([
+            'comments' => $query->latest()->get()
+        ]);
     }
 
     public function store(Request $request)
     {
+        // Soporte para que el frontend envíe 'content' en lugar de 'text'
+        $text = $request->text ?? $request->content;
+        
         $request->validate([
-            'text'       => 'required|string',
             'category'   => 'required|string',
-            'user_id'    => 'nullable|integer|exists:users,id',
             'parent_id'  => 'nullable|exists:recommendations,id',
             'media_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,mov,avi|max:20480',
         ]);
+
+        if (!$text) {
+             return response()->json(['message' => 'El campo texto es obligatorio.'], 422);
+        }
+
+        $userId = auth()->id() ?? $request->user_id;
 
         $mediaUrl  = null;
         $mediaType = null;
@@ -73,9 +84,9 @@ class RecommendationController extends Controller
         }
 
         $recommendation = Recommendation::create([
-            'text'       => $request->text,
+            'text'       => $text,
             'category'   => $request->category,
-            'user_id'    => $request->user_id,
+            'user_id'    => $userId,
             'parent_id'  => $request->parent_id,
             'media_url'  => $mediaUrl,
             'media_type' => $mediaType,
@@ -84,21 +95,13 @@ class RecommendationController extends Controller
         // ✅ CREAR NOTIFICACIÓN si es una respuesta a un comentario
         if ($request->parent_id) {
             $parentComment = Recommendation::find($request->parent_id);
-
-            // Solo notificar si el comentario padre tiene dueño
-            // y el que responde NO es el mismo dueño
-            if ($parentComment &&
-                $parentComment->user_id &&
-                $parentComment->user_id !== (int) $request->user_id)
-            {
+            if ($parentComment && $parentComment->user_id && $parentComment->user_id !== (int) $userId) {
                 $fromUserName = $recommendation->load('user')->user?->name ?? 'Alguien';
-                $preview = strlen($request->text) > 60
-                    ? substr($request->text, 0, 60) . '...'
-                    : $request->text;
+                $preview = strlen($text) > 60 ? substr($text, 0, 60) . '...' : $text;
 
                 Notification::create([
                     'user_id'           => $parentComment->user_id,
-                    'from_user_id'      => $request->user_id,
+                    'from_user_id'      => $userId,
                     'recommendation_id' => $parentComment->id,
                     'type'              => 'reply',
                     'message'           => "{$fromUserName} respondió tu publicación: \"{$preview}\"",
@@ -107,13 +110,33 @@ class RecommendationController extends Controller
             }
         }
 
-        return response()->json($recommendation->load('user'), 201);
+        return response()->json(['comment' => $recommendation->load('user')], 201);
     }
 
     public function show($id)
     {
-        return response()->json(
-            Recommendation::with(['user', 'replies.user'])->findOrFail($id)
-        );
+        return response()->json([
+            'comment' => Recommendation::with(['user', 'replies.user'])->findOrFail($id)
+        ]);
+    }
+
+    public function reply(Request $request, $id)
+    {
+        // Simular un store pero forzando el parent_id
+        $request->merge(['parent_id' => $id, 'category' => 'Opinión']);
+        return $this->store($request);
+    }
+
+    public function destroy($id)
+    {
+        $rec = Recommendation::where('user_id', auth()->id())->findOrFail($id);
+        $rec->delete();
+        return response()->json(['success' => true]);
+    }
+
+    public function toggleLike($id)
+    {
+        // Por ahora simulado ya que no hay tabla de likes
+        return response()->json(['liked' => true]);
     }
 }

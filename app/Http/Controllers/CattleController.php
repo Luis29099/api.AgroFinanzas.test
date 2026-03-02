@@ -13,20 +13,17 @@ class CattleController extends Controller
     // ── Listar animales del usuario ───────────────────────────
     public function index(Request $request)
     {
-        $query = Cattle::with(['mother', 'calves', 'user'])
-            ->whereNull('mother_id'); // Solo animales principales (no terneros)
+        $userId = auth()->id() ?? $request->user_id;
+        
+        $query = Cattle::with(['mother', 'calves', 'user']);
 
-        // Filtrar por usuario si se pasa user_id
-        if ($request->has('user_id')) {
-            $query->where('user_id', $request->user_id);
+        if ($userId) {
+            $query->where('user_id', $userId);
         }
 
-        // Filtrar también terneros si se pide
-        if ($request->boolean('include_calves')) {
-            $query = Cattle::with(['mother', 'calves', 'user']);
-            if ($request->has('user_id')) {
-                $query->where('user_id', $request->user_id);
-            }
+        // Por defecto ocultar terneros de la lista principal a menos que se pida
+        if (!$request->boolean('include_calves')) {
+            $query->whereNull('mother_id');
         }
 
         $cattle = $query->latest()->get();
@@ -34,16 +31,16 @@ class CattleController extends Controller
         // Conteos útiles para el dashboard
         $summary = [
             'total'   => $cattle->count(),
+            'machos'  => $cattle->whereIn('gender', ['male', 'macho'])->count(),
+            'hembras' => $cattle->whereIn('gender', ['female', 'hembra'])->count(),
+            'crias'   => Cattle::where('user_id', $userId)->whereNotNull('mother_id')->count(),
             'active'  => $cattle->where('status', 'active')->count(),
-            'females' => $cattle->where('gender', 'female')->count(),
-            'males'   => $cattle->where('gender', 'male')->count(),
-            'calves'  => Cattle::where('user_id', $request->user_id)
-                               ->whereNotNull('mother_id')->count(),
         ];
 
         return response()->json([
             'success' => true,
             'cattle'  => $cattle,
+            'animals' => $cattle, // Alias para el frontend
             'summary' => $summary,
         ]);
     }
@@ -54,32 +51,49 @@ class CattleController extends Controller
         $cattle = Cattle::with(['mother', 'calves.calves', 'user', 'animal_production'])
             ->findOrFail($id);
 
-        return response()->json(['success' => true, 'cattle' => $cattle]);
+        return response()->json([
+            'success' => true, 
+            'cattle' => $cattle, 
+            'animal' => $cattle
+        ]);
     }
 
     // ── Registrar animal nuevo ────────────────────────────────
     public function store(Request $request)
     {
+        // Mapear campos del frontend al backend
+        if ($request->has('purpose') && !$request->has('use_milk_meat')) {
+            $request->merge(['use_milk_meat' => $request->purpose]);
+        }
+        if ($request->has('weight') && !$request->has('average_weight')) {
+            $request->merge(['average_weight' => $request->weight]);
+        }
+        
+        // Inyectar user_id
+        if (!$request->has('user_id')) {
+            $request->merge(['user_id' => auth()->id()]);
+        }
+
         $request->validate([
             'name'               => 'nullable|string|max:100',
             'tag_number'         => 'nullable|string|max:50',
             'breed'              => 'required|string|max:255',
             'average_weight'     => 'nullable|string|max:50',
             'use_milk_meat'      => 'required|in:milk,meat,dual',
-            'gender'             => 'required|in:female,male',
+            'gender'             => 'required|in:female,male,hembra,macho',
             'origin'             => 'nullable|in:born_here,purchased',
             'mother_id'          => 'nullable|exists:cattle,id',
             'birth_date'         => 'nullable|date',
             'status'             => 'nullable|in:active,sold,dead',
             'notes'              => 'nullable|string|max:1000',
             'user_id'            => 'required|exists:users,id',
-            'id_animal_production' => 'nullable|exists:animal_productions,id',
+            'id_animal_production' => 'nullable',
             'photo'              => 'nullable|image|mimes:jpg,jpeg,png|max:3072',
         ]);
 
         $photoUrl = null;
 
-        if ($request->hasFile('photo')) {
+        if ($request->hasFile('photo') && env('CLOUDINARY_CLOUD_NAME')) {
             try {
                 $file = $request->file('photo');
                 $cloudinary = new Cloudinary(Configuration::instance([
@@ -99,8 +113,27 @@ class CattleController extends Controller
 
             } catch (\Exception $e) {
                 Log::error('Cloudinary cattle photo error: ' . $e->getMessage());
-                return response()->json(['success' => false, 'message' => 'Error al subir la foto: ' . $e->getMessage()], 500);
             }
+        }
+
+        // Normalizar género para el backend
+        $gender = $request->gender;
+        if ($gender === 'hembra') $gender = 'female';
+        if ($gender === 'macho')  $gender = 'male';
+
+        // Asegurar que id_animal_production no sea nulo si la DB lo requiere
+        $idProduction = $request->id_animal_production;
+        if (!$idProduction) {
+            $prod = \App\Models\Animal_production::where('user_id', $request->user_id)->first();
+            if (!$prod) {
+                $prod = \App\Models\Animal_production::create([
+                    'type' => 'hato',
+                    'quantity' => 0,
+                    'acquisition_date' => now(),
+                    'user_id' => $request->user_id
+                ]);
+            }
+            $idProduction = $prod->id;
         }
 
         $cattle = Cattle::create([
@@ -109,14 +142,14 @@ class CattleController extends Controller
             'breed'              => $request->breed,
             'average_weight'     => $request->average_weight,
             'use_milk_meat'      => $request->use_milk_meat,
-            'gender'             => $request->gender,
+            'gender'             => $gender,
             'origin'             => $request->origin,
             'mother_id'          => $request->mother_id,
             'birth_date'         => $request->birth_date,
             'status'             => $request->status ?? 'active',
             'notes'              => $request->notes,
             'user_id'            => $request->user_id,
-            'id_animal_production' => $request->id_animal_production,
+            'id_animal_production' => $idProduction,
             'photo_url'          => $photoUrl,
         ]);
 
@@ -124,19 +157,25 @@ class CattleController extends Controller
             'success' => true,
             'message' => 'Animal registrado correctamente.',
             'cattle'  => $cattle->load(['mother', 'calves']),
+            'animal'  => $cattle
         ], 201);
     }
 
     // ── Registrar nacimiento de ternero ───────────────────────
-    // POST /cattles/{id}/birth
-    public function registerBirth(Request $request, $motherId)
+    public function registerBirth(Request $request, $motherId = null)
     {
-        $mother = Cattle::findOrFail($motherId);
+        $mId = $motherId ?? $request->mother_id;
+
+        if (!$mId) {
+            return response()->json(['success' => false, 'message' => 'Se requiere el ID de la madre.'], 400);
+        }
+
+        $mother = Cattle::findOrFail($mId);
 
         $request->validate([
             'name'        => 'nullable|string|max:100',
             'tag_number'  => 'nullable|string|max:50',
-            'gender'      => 'required|in:female,male',
+            'gender'      => 'required|in:female,male,hembra,macho',
             'birth_date'  => 'required|date',
             'notes'       => 'nullable|string|max:1000',
             'photo'       => 'nullable|image|mimes:jpg,jpeg,png|max:3072',
@@ -165,19 +204,37 @@ class CattleController extends Controller
             }
         }
 
+        $gender = $request->gender;
+        if ($gender === 'hembra') $gender = 'female';
+        if ($gender === 'macho')  $gender = 'male';
+
+        $idProduction = $mother->id_animal_production;
+        if (!$idProduction) {
+            $prod = \App\Models\Animal_production::where('user_id', $mother->user_id)->first();
+            if (!$prod) {
+                $prod = \App\Models\Animal_production::create([
+                    'type' => 'hato',
+                    'quantity' => 0,
+                    'acquisition_date' => now(),
+                    'user_id' => $mother->user_id
+                ]);
+            }
+            $idProduction = $prod->id;
+        }
+
         $calf = Cattle::create([
             'name'               => $request->name,
             'tag_number'         => $request->tag_number,
-            'breed'              => $mother->breed,       // Hereda raza de la madre
+            'breed'              => $mother->breed,
             'use_milk_meat'      => $mother->use_milk_meat,
-            'gender'             => $request->gender,
+            'gender'             => $gender,
             'origin'             => 'born_here',
             'mother_id'          => $mother->id,
             'birth_date'         => $request->birth_date,
             'status'             => 'active',
             'notes'              => $request->notes,
             'user_id'            => $mother->user_id,
-            'id_animal_production' => $mother->id_animal_production,
+            'id_animal_production' => $idProduction,
             'photo_url'          => $photoUrl,
         ]);
 
@@ -193,13 +250,20 @@ class CattleController extends Controller
     {
         $cattle = Cattle::findOrFail($id);
 
+        if ($request->has('purpose') && !$request->has('use_milk_meat')) {
+            $request->merge(['use_milk_meat' => $request->purpose]);
+        }
+        if ($request->has('weight') && !$request->has('average_weight')) {
+            $request->merge(['average_weight' => $request->weight]);
+        }
+
         $request->validate([
             'name'           => 'nullable|string|max:100',
             'tag_number'     => 'nullable|string|max:50',
             'breed'          => 'nullable|string|max:255',
             'average_weight' => 'nullable|string|max:50',
             'use_milk_meat'  => 'nullable|in:milk,meat,dual',
-            'gender'         => 'nullable|in:female,male',
+            'gender'         => 'nullable|in:female,male,hembra,macho',
             'status'         => 'nullable|in:active,sold,dead',
             'notes'          => 'nullable|string|max:1000',
             'photo'          => 'nullable|image|mimes:jpg,jpeg,png|max:3072',
@@ -229,7 +293,12 @@ class CattleController extends Controller
         $campos = ['name', 'tag_number', 'breed', 'average_weight', 'use_milk_meat', 'gender', 'status', 'notes', 'birth_date'];
         foreach ($campos as $campo) {
             if ($request->has($campo)) {
-                $cattle->$campo = $request->$campo;
+                $val = $request->$campo;
+                if ($campo === 'gender') {
+                    if ($val === 'hembra') $val = 'female';
+                    if ($val === 'macho')  $val = 'male';
+                }
+                $cattle->$campo = $val;
             }
         }
 
@@ -249,5 +318,21 @@ class CattleController extends Controller
         $cattle->delete();
 
         return response()->json(['success' => true, 'message' => 'Animal eliminado.']);
+    }
+
+    // ── Listar madres posibles para el Hato ────────────────
+    public function mothers(Request $request)
+    {
+        $userId = auth()->id() ?? $request->query('user_id');
+
+        $mothers = Cattle::where('gender', 'female')
+            ->where('status', 'active')
+            ->where('user_id', $userId)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'mothers' => $mothers,
+        ]);
     }
 }

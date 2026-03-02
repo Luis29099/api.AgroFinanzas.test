@@ -38,6 +38,7 @@ class AdminFinancesController extends Controller
             'success'  => true,
             'finances' => $finances,
             'summary'  => $summary,
+            'users'    => User::select('id', 'name', 'email')->get()
         ]);
     }
 

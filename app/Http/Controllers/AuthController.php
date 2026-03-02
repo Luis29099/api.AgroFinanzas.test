@@ -266,9 +266,9 @@ class AuthController extends Controller
         $user = User::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'name'             => 'nullable|string|min:3|max:100',
-            'email'            => 'nullable|email|unique:users,email,' . $id,
-            'birth_date'       => 'nullable|date|before:today',
+            'name'             => 'required|string|min:3|max:100',
+            'email'            => 'required|email|unique:users,email,' . $id,
+            'birth_date'       => 'required|date|before:today',
             'profile_photo'    => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'phone'            => 'nullable|string|max:20',
             'gender'           => 'nullable|in:male,female,other',
@@ -279,7 +279,7 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
         }
 
-        if ($request->hasFile('profile_photo')) {
+        if ($request->hasFile('profile_photo') && env('CLOUDINARY_CLOUD_NAME')) {
             try {
                 $file = $request->file('profile_photo');
                 if (!$file->isValid()) {
@@ -296,14 +296,14 @@ class AuthController extends Controller
                 $user->profile_photo = $result['secure_url'];
             } catch (\Exception $e) {
                 Log::error('Cloudinary error: ' . $e->getMessage());
-                return response()->json(['success' => false, 'message' => 'Error al subir imagen: ' . $e->getMessage()], 500);
+                // We'll log the error but still proceed with saving other fields
             }
         }
 
         $campos = ['name', 'email', 'birth_date', 'phone', 'gender', 'experience_years'];
         foreach ($campos as $campo) {
-            $valor = $request->input($campo);
-            if (!is_null($valor) && $valor !== '') {
+            if ($request->has($campo)) {
+                $valor = $request->input($campo);
                 $user->$campo = $valor;
             }
         }
