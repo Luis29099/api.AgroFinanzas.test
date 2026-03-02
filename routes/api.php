@@ -16,6 +16,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminUsersController;
 use App\Http\Controllers\AdminFinancesController;
 use App\Http\Controllers\AdminCommentsController;
+use Illuminate\Http\Request;
 
 // ── AUTH ──────────────────────────────────────────────────────
 Route::post('/register',    [AuthController::class, 'register']);

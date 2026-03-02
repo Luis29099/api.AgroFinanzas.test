@@ -62,11 +62,11 @@ class FinanceController extends Controller
         Log::info('Store Finance Request:', $request->all());
 
         $baseRules = [
-            'user_id'     => 'required|exists:users,id',
+            'user_id'     => 'sometimes|nullable|exists:users,id',
             'type'        => 'required|in:income,expense,investment,debt,inventory,costs',
             'amount'      => 'required|numeric|min:0.01',
             'date'        => 'required|date',
-            'description' => 'nullable|string|max:500',
+            'description' => 'nullable|string|max:5000',
             'category'    => 'nullable|string|max:100',
         ];
 
@@ -123,6 +123,9 @@ class FinanceController extends Controller
         }
 
         try {
+            // Inject authenticated user ID
+            $request->merge(['user_id' => auth()->id()]);
+            
             $finance = Finance::create($request->all());
 
             Log::info('Finance created:', ['id' => $finance->id, 'user_id' => $finance->user_id]);
