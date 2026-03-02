@@ -5,12 +5,25 @@ namespace App\Http\Controllers;
 use App\Models\Notification;
 use App\Models\Recommendation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Cloudinary\Cloudinary;
 use Cloudinary\Configuration\Configuration;
 
 class RecommendationController extends Controller
 {
+    // ── Helper: obtiene el user_id de forma segura ────────────
+    private function resolveUserId(Request $request): ?int
+    {
+        // 1) Usuario autenticado via Sanctum
+        $user = Auth::guard('sanctum')->user();
+        if ($user) return (int) $user->id;
+
+        // 2) Fallback: campo user_id en el body (para testing / casos legacy)
+        $uid = $request->input('user_id');
+        return $uid ? (int) $uid : null;
+    }
+
     public function index(Request $request)
     {
         $query = Recommendation::with(['user', 'replies.user'])
@@ -29,7 +42,7 @@ class RecommendationController extends Controller
     {
         // Soporte para que el frontend envíe 'content' en lugar de 'text'
         $text = $request->text ?? $request->content;
-        
+
         $request->validate([
             'category'   => 'required|string',
             'parent_id'  => 'nullable|exists:recommendations,id',
@@ -37,10 +50,14 @@ class RecommendationController extends Controller
         ]);
 
         if (!$text) {
-             return response()->json(['message' => 'El campo texto es obligatorio.'], 422);
+            return response()->json(['message' => 'El campo texto es obligatorio.'], 422);
         }
 
-        $userId = auth()->id() ?? $request->user_id;
+        $userId = $this->resolveUserId($request);
+
+        if (!$userId) {
+            return response()->json(['message' => 'No autenticado. Inicia sesión nuevamente.'], 401);
+        }
 
         $mediaUrl  = null;
         $mediaType = null;
@@ -79,7 +96,10 @@ class RecommendationController extends Controller
 
             } catch (\Exception $e) {
                 Log::error('Cloudinary recommendation media error: ' . $e->getMessage());
-                return response()->json(['success' => false, 'message' => 'Error al subir el archivo: ' . $e->getMessage()], 500);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al subir el archivo: ' . $e->getMessage()
+                ], 500);
             }
         }
 
@@ -92,10 +112,10 @@ class RecommendationController extends Controller
             'media_type' => $mediaType,
         ]);
 
-        // ✅ CREAR NOTIFICACIÓN si es una respuesta a un comentario
+        // ✅ Notificación si es respuesta a otro comentario
         if ($request->parent_id) {
             $parentComment = Recommendation::find($request->parent_id);
-            if ($parentComment && $parentComment->user_id && $parentComment->user_id !== (int) $userId) {
+            if ($parentComment && $parentComment->user_id && $parentComment->user_id !== $userId) {
                 $fromUserName = $recommendation->load('user')->user?->name ?? 'Alguien';
                 $preview = strlen($text) > 60 ? substr($text, 0, 60) . '...' : $text;
 
@@ -122,21 +142,25 @@ class RecommendationController extends Controller
 
     public function reply(Request $request, $id)
     {
-        // Simular un store pero forzando el parent_id
-        $request->merge(['parent_id' => $id, 'category' => 'Opinión']);
+        $request->merge(['parent_id' => $id, 'category' => $request->category ?? 'Opinión']);
         return $this->store($request);
     }
 
     public function destroy($id)
     {
-        $rec = Recommendation::where('user_id', auth()->id())->findOrFail($id);
+        $user = Auth::guard('sanctum')->user();
+        if (!$user) {
+            return response()->json(['message' => 'No autenticado.'], 401);
+        }
+
+        $rec = Recommendation::where('user_id', $user->id)->findOrFail($id);
         $rec->delete();
         return response()->json(['success' => true]);
     }
 
     public function toggleLike($id)
     {
-        // Por ahora simulado ya que no hay tabla de likes
+        // Simulado — no hay tabla de likes aún
         return response()->json(['liked' => true]);
     }
 }
