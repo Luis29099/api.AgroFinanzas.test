@@ -1,0 +1,1 @@
+web: php artisan route:clear && php artisan config:clear && php artisan cache:clear && frankenphp run --config /etc/frankenphp/Caddyfile
