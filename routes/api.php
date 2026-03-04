@@ -17,7 +17,7 @@ use App\Http\Controllers\AdminUsersController;
 use App\Http\Controllers\AdminFinancesController;
 use App\Http\Controllers\AdminCommentsController;
 use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\Client\FinanceExportController;
+use App\Http\Controllers\FinanceExportController;
 use Illuminate\Http\Request;
 
 // ── AUTH ──────────────────────────────────────────────────────
@@ -27,6 +27,7 @@ Route::post('/verify-code', [AuthController::class, 'verifyCode']);
 Route::post('/resend-code', [AuthController::class, 'resendCode']);
 
 use App\Http\Controllers\ClimaController;
+use App\Http\Controllers\FinanceExportController as ControllersFinanceExportController;
 use App\Http\Controllers\PreciosController;
 
 // ── EXTERNAS / PÚBLICAS ───────────────────────────────────────
