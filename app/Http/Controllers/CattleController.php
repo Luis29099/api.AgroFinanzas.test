@@ -23,36 +23,37 @@ class CattleController extends Controller
 
     // ── Listar animales del usuario ───────────────────────────
     public function index(Request $request)
-    {
-        $userId = $this->resolveUserId($request);
+{
+    $userId = $this->resolveUserId($request);
 
-        $query = Cattle::with(['mother', 'calves', 'user']);
+    $query = Cattle::with(['mother', 'calves', 'user']);
 
-        if ($userId) {
-            $query->where('user_id', $userId);
-        }
-
-        if (!$request->boolean('include_calves')) {
-            $query->whereNull('mother_id');
-        }
-
-        $cattle = $query->latest()->get();
-
-        $summary = [
-            'total'   => $cattle->count(),
-            'machos'  => $cattle->whereIn('gender', ['male', 'macho'])->count(),
-            'hembras' => $cattle->whereIn('gender', ['female', 'hembra'])->count(),
-            'crias'   => $userId ? Cattle::where('user_id', $userId)->whereNotNull('mother_id')->count() : 0,
-            'active'  => $cattle->where('status', 'active')->count(),
-        ];
-
-        return response()->json([
-            'success' => true,
-            'cattle'  => $cattle,
-            'animals' => $cattle,
-            'summary' => $summary,
-        ]);
+    if ($userId) {
+        $query->where('user_id', $userId);
     }
+
+    // ✅ Sin filtro de mother_id — se devuelven adultos Y terneros
+    // El frontend (HatoIndex.tsx) los separa con:
+    //   const adults = animals.filter(a => !a.mother_id)
+    //   const calves  = animals.filter(a =>  a.mother_id)
+
+    $cattle = $query->latest()->get();
+
+    $summary = [
+        'total'   => $cattle->count(),
+        'machos'  => $cattle->whereIn('gender', ['male', 'macho'])->count(),
+        'hembras' => $cattle->whereIn('gender', ['female', 'hembra'])->count(),
+        'crias'   => $cattle->whereNotNull('mother_id')->count(),
+        'active'  => $cattle->where('status', 'active')->count(),
+    ];
+
+    return response()->json([
+        'success' => true,
+        'cattle'  => $cattle,
+        'animals' => $cattle,
+        'summary' => $summary,
+    ]);
+}
 
     // ── Ver un animal individual ──────────────────────────────
     public function show($id)

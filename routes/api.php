@@ -17,6 +17,7 @@ use App\Http\Controllers\AdminUsersController;
 use App\Http\Controllers\AdminFinancesController;
 use App\Http\Controllers\AdminCommentsController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\Client\FinanceExportController;
 use Illuminate\Http\Request;
 
 // ── AUTH ──────────────────────────────────────────────────────
@@ -100,7 +101,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('hato/{id}',           [CattleController::class, 'show']);
     Route::post('hato/{id}',          [CattleController::class, 'update']);
     Route::delete('hato/{id}',        [CattleController::class, 'destroy']);
-
+    Route::put('hato/{id}', [CattleController::class, 'update']);
     // Compatibilidad legacy cattles
     Route::get('cattles',             [CattleController::class, 'index']);
     Route::post('cattles',            [CattleController::class, 'store']);
@@ -181,3 +182,4 @@ Route::middleware(['admin.token'])->prefix('admin')->group(function () {
     Route::delete('/comments/{id}',       [AdminCommentsController::class, 'destroy']);
 });
 Route::get('precios', [PreciosController::class, 'index']);
+Route::post('/client/finances/export-pdf', [FinanceExportController::class, 'exportPDF'])->middleware('auth:sanctum');
