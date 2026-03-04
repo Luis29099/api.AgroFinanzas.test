@@ -22,23 +22,27 @@ use Barryvdh\DomPDF\Facade\Pdf;
  */
 class FinanceExportController extends Controller
 {
-    public function exportPDF(Request $request): \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
-{
-    try {
+    public function exportPDF(Request $request): Response
+    {
         $user   = $request->user();
         $filter = $request->input('filter', 'all');
         $from   = $request->input('date_from');
         $to     = $request->input('date_to');
 
+        // ── Fetch finances ────────────────────────────────────────
+        // Reuse your existing query logic. Adjust the model/relationship to match yours.
         $query = \App\Models\Finance::where('user_id', $user->id)
             ->orderBy('date', 'desc');
 
-        if ($filter !== 'all') $query->where('type', $filter);
-        if ($from) $query->whereDate('date', '>=', $from);
-        if ($to)   $query->whereDate('date', '<=', $to);
+        if ($filter !== 'all') {
+            $query->where('type', $filter);
+        }
+        if ($from) { $query->whereDate('date', '>=', $from); }
+        if ($to)   { $query->whereDate('date', '<=', $to);   }
 
         $finances = $query->get();
 
+        // ── Calculate totals ─────────────────────────────────────
         $totals = [
             'totalIncome'     => $finances->where('type', 'income')->sum('amount'),
             'totalExpense'    => $finances->where('type', 'expense')->sum('amount'),
@@ -49,27 +53,19 @@ class FinanceExportController extends Controller
         ];
         $totals['balance'] = $totals['totalIncome'] - $totals['totalExpense'];
 
+        // ── Render PDF view ──────────────────────────────────────
         $pdf = Pdf::loadView('pdf.finance-history', [
-            'user'        => $user,
-            'finances'    => $finances,
-            'totals'      => $totals,
-            'filter'      => $filter,
-            'dateFrom'    => $from,
-            'dateTo'      => $to,
+            'user'      => $user,
+            'finances'  => $finances,
+            'totals'    => $totals,
+            'filter'    => $filter,
+            'dateFrom'  => $from,
+            'dateTo'    => $to,
             'generatedAt' => now()->format('d/m/Y H:i'),
         ])->setPaper('a4', 'landscape');
 
         $filename = 'historial-financiero-' . now()->format('Y-m-d') . '.pdf';
 
         return $pdf->download($filename);
-
-    } catch (\Throwable $e) {
-        return response()->json([
-            'error'   => $e->getMessage(),
-            'file'    => $e->getFile(),
-            'line'    => $e->getLine(),
-            'trace'   => collect($e->getTrace())->take(5)->toArray(),
-        ], 500);
     }
-}
 }
