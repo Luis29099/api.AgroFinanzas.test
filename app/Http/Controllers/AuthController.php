@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Cloudinary\Cloudinary;
 use Cloudinary\Configuration\Configuration;
+use App\Mail\DeleteAccountMail;
 
 class AuthController extends Controller
 {
@@ -160,29 +161,29 @@ class AuthController extends Controller
 
     // ── ENVIAR CÓDIGO PARA ELIMINAR CUENTA ───────────────────
     public function sendDeleteCode(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
+{
+    $user = User::findOrFail($id);
 
-        if (!$user->is_verified) {
-            return response()->json(['success' => false, 'message' => 'Esta cuenta no está verificada.'], 422);
-        }
-
-        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-
-        $user->update([
-            'verification_code'       => $code,
-            'verification_expires_at' => now()->addMinutes(15),
-        ]);
-
-        try {
-            Mail::to($user->email)->send(new VerificationCodeMail($code, $user->name));
-        } catch (\Exception $e) {
-            Log::error('Error enviando código de eliminación: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'No se pudo enviar el correo.'], 500);
-        }
-
-        return response()->json(['success' => true, 'message' => 'Código enviado a tu correo para confirmar la eliminación.']);
+    if (!$user->is_verified) {
+        return response()->json(['success' => false, 'message' => 'Esta cuenta no está verificada.'], 422);
     }
+
+    $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+    $user->update([
+        'verification_code'       => $code,
+        'verification_expires_at' => now()->addMinutes(15),
+    ]);
+
+    try {
+        Mail::to($user->email)->send(new DeleteAccountMail($code, $user->name));
+    } catch (\Exception $e) {
+        Log::error('Error enviando código de eliminación: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'No se pudo enviar el correo.'], 500);
+    }
+
+    return response()->json(['success' => true, 'message' => 'Código enviado a tu correo para confirmar la eliminación.']);
+}
 
     // ── ELIMINAR CUENTA ───────────────────────────────────────
     public function deleteAccount(Request $request, $id)
