@@ -41,7 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/users/{id}/update-profile',       [AuthController::class, 'updateProfile']);
     Route::post('/users/{id}/send-delete-code',     [AuthController::class, 'sendDeleteCode']);
     Route::delete('/users/{id}',                    [AuthController::class, 'deleteAccount']);
-
+    Route::post('/users/{id}/delete-confirm', [AuthController::class, 'deleteAccount'])->middleware('auth:sanctum');
     // ── USUARIOS ──────────────────────────────────────────────────
     Route::get('user_apps',            [UserController::class, 'index']);
     Route::post('user_apps',           [UserController::class, 'store']);
