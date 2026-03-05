@@ -160,7 +160,8 @@ class AuthController extends Controller
     }
 
     // ── ENVIAR CÓDIGO PARA ELIMINAR CUENTA ───────────────────
-    public function sendDeleteCode(Request $request, $id)
+   // ── ENVIAR CÓDIGO PARA ELIMINAR CUENTA ───────────────────
+public function sendDeleteCode(Request $request, $id)
 {
     $user = User::findOrFail($id);
 
@@ -177,9 +178,14 @@ class AuthController extends Controller
 
     try {
         Mail::to($user->email)->send(new DeleteAccountMail($code, $user->name));
+        Log::info('Correo eliminación enviado a: ' . $user->email);
     } catch (\Exception $e) {
         Log::error('Error enviando código de eliminación: ' . $e->getMessage());
-        return response()->json(['success' => false, 'message' => 'No se pudo enviar el correo.'], 500);
+        Log::error('Stack: ' . $e->getTraceAsString());
+        return response()->json([
+            'success' => false,
+            'message' => 'No se pudo enviar el correo: ' . $e->getMessage(),
+        ], 500);
     }
 
     return response()->json(['success' => true, 'message' => 'Código enviado a tu correo para confirmar la eliminación.']);
