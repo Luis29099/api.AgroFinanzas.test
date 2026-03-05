@@ -25,6 +25,8 @@ Route::post('/register',    [AuthController::class, 'register']);
 Route::post('/login',       [AuthController::class, 'login']);
 Route::post('/verify-code', [AuthController::class, 'verifyCode']);
 Route::post('/resend-code', [AuthController::class, 'resendCode']);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/reset-password',  [AuthController::class, 'resetPassword']);
 
 use App\Http\Controllers\ClimaController;
 use App\Http\Controllers\FinanceExportController as ControllersFinanceExportController;

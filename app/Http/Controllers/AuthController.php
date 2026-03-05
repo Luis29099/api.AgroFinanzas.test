@@ -312,4 +312,100 @@ class AuthController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Perfil actualizado', 'user' => $user]);
     }
+    // ── OLVIDÉ MI CONTRASEÑA ──────────────────────────────────
+public function forgotPassword(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'email' => 'required|email|exists:users,email',
+    ], [
+        'email.required' => 'El correo es obligatorio.',
+        'email.email'    => 'Formato de correo inválido.',
+        'email.exists'   => 'No encontramos una cuenta con ese correo.',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'message' => $validator->errors()->first(),
+        ], 422);
+    }
+
+    $user = User::where('email', $request->email)->first();
+
+    $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+    $user->update([
+        'verification_code'       => $code,
+        'verification_expires_at' => now()->addMinutes(15),
+    ]);
+
+    try {
+        Mail::to($user->email)->send(new \App\Mail\ForgotPasswordMail($code, $user->name));
+    } catch (\Exception $e) {
+        Log::error('Error enviando correo recuperación: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'No se pudo enviar el correo. Intenta de nuevo.',
+        ], 500);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Código enviado a tu correo.',
+        'user_id' => $user->id,
+        'email'   => $user->email,
+    ]);
+}
+
+// ── RESTABLECER CONTRASEÑA ────────────────────────────────
+public function resetPassword(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'user_id'  => 'required|integer|exists:users,id',
+        'code'     => 'required|string|size:6',
+        'password' => 'required|string|min:8|confirmed',
+    ], [
+        'user_id.required'   => 'El usuario es requerido.',
+        'code.required'      => 'El código es obligatorio.',
+        'code.size'          => 'El código debe tener 6 dígitos.',
+        'password.required'  => 'La contraseña es obligatoria.',
+        'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
+        'password.confirmed' => 'Las contraseñas no coinciden.',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'message' => $validator->errors()->first(),
+        ], 422);
+    }
+
+    $user = User::findOrFail($request->user_id);
+
+    if (now()->isAfter($user->verification_expires_at)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'El código expiró. Solicita uno nuevo.',
+            'expired' => true,
+        ], 422);
+    }
+
+    if ($user->verification_code !== $request->code) {
+        return response()->json([
+            'success' => false,
+            'message' => 'El código ingresado es incorrecto.',
+        ], 422);
+    }
+
+    $user->update([
+        'password'                => Hash::make($request->password),
+        'verification_code'       => null,
+        'verification_expires_at' => null,
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => '¡Contraseña restablecida correctamente! Ya puedes iniciar sesión.',
+    ]);
+}
 }
