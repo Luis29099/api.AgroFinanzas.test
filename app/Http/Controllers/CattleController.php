@@ -229,20 +229,21 @@ class CattleController extends Controller
         }
 
         $calf = Cattle::create([
-            'name'                 => $request->name,
-            'tag_number'           => $request->tag_number,
-            'breed'                => $mother->breed,
-            'use_milk_meat'        => $mother->use_milk_meat,
-            'gender'               => $gender,
-            'origin'               => 'born_here',
-            'mother_id'            => $mother->id,
-            'birth_date'           => $request->birth_date,
-            'status'               => 'active',
-            'notes'                => $request->notes,
-            'user_id'              => $mother->user_id,
-            'id_animal_production' => $idProduction,
-            'photo_url'            => $photoUrl,
-        ]);
+    'name'                 => $request->name,
+    'tag_number'           => $request->tag_number,
+    'breed'                => $mother->breed,
+    'use_milk_meat'        => $mother->use_milk_meat,
+    'average_weight'       => '0', // ← agrega esta línea
+    'gender'               => $gender,
+    'origin'               => 'born_here',
+    'mother_id'            => $mother->id,
+    'birth_date'           => $request->birth_date,
+    'status'               => 'active',
+    'notes'                => $request->notes,
+    'user_id'              => $mother->user_id,
+    'id_animal_production' => $idProduction,
+    'photo_url'            => $photoUrl,
+]);
 
         return response()->json([
             'success' => true,
