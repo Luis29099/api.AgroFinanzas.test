@@ -173,7 +173,8 @@ class CattleController extends Controller
 
     // ── Registrar nacimiento de ternero ───────────────────────
     public function registerBirth(Request $request, $motherId = null)
-    {
+{
+    try {
         $mId = $motherId ?? $request->mother_id;
 
         if (!$mId) {
@@ -193,7 +194,7 @@ class CattleController extends Controller
 
         $photoUrl = null;
 
-        if ($request->hasFile('photo')) {
+        if ($request->hasFile('photo') && env('CLOUDINARY_CLOUD_NAME')) {
             try {
                 $file = $request->file('photo');
                 $cloudinary = new Cloudinary(Configuration::instance([
@@ -221,31 +222,26 @@ class CattleController extends Controller
         $idProduction = $mother->id_animal_production;
         if (!$idProduction) {
             $prod = \App\Models\Animal_production::where('user_id', $mother->user_id)->first();
-            if (!$prod) {
-                $prod = \App\Models\Animal_production::create([
-                    'type'             => 'hato',
-                    'quantity'         => 0,
-                    'acquisition_date' => now(),
-                    'user_id'          => $mother->user_id
-                ]);
+            if ($prod) {
+                $idProduction = $prod->id;
             }
-            $idProduction = $prod->id;
+            // ⚠️ Si no existe, dejamos null — no intentamos crear
         }
 
         $calf = Cattle::create([
-            'name'               => $request->name,
-            'tag_number'         => $request->tag_number,
-            'breed'              => $mother->breed,
-            'use_milk_meat'      => $mother->use_milk_meat,
-            'gender'             => $gender,
-            'origin'             => 'born_here',
-            'mother_id'          => $mother->id,
-            'birth_date'         => $request->birth_date,
-            'status'             => 'active',
-            'notes'              => $request->notes,
-            'user_id'            => $mother->user_id,
+            'name'                 => $request->name,
+            'tag_number'           => $request->tag_number,
+            'breed'                => $mother->breed,
+            'use_milk_meat'        => $mother->use_milk_meat,
+            'gender'               => $gender,
+            'origin'               => 'born_here',
+            'mother_id'            => $mother->id,
+            'birth_date'           => $request->birth_date,
+            'status'               => 'active',
+            'notes'                => $request->notes,
+            'user_id'              => $mother->user_id,
             'id_animal_production' => $idProduction,
-            'photo_url'          => $photoUrl,
+            'photo_url'            => $photoUrl,
         ]);
 
         return response()->json([
@@ -253,7 +249,15 @@ class CattleController extends Controller
             'message' => "¡Ternero registrado! Madre: " . ($mother->name ?? 'Sin nombre'),
             'calf'    => $calf->load('mother'),
         ], 201);
+
+    } catch (\Exception $e) {
+        Log::error('registerBirth error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error interno: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     // ── Actualizar animal ─────────────────────────────────────
     public function update(Request $request, $id)
