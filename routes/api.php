@@ -49,15 +49,19 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ── FINANZAS ──────────────────────────────────────────────────
     Route::prefix('finances')->group(function () {
-        Route::get('/',                       [FinanceController::class, 'index']);
-        Route::post('/',                      [FinanceController::class, 'store']);
-        Route::get('/statistics/summary',     [FinanceController::class, 'statistics']);
-        Route::get('/{id}',                   [FinanceController::class, 'show']);
-        Route::put('/{id}',                   [FinanceController::class, 'update']);
-        Route::delete('/{id}',                [FinanceController::class, 'destroy']);
-        Route::patch('/{id}/pay-installment', [FinanceController::class, 'payDebtInstallment']);
-        Route::post('/ajax',                  [FinanceController::class, 'storeAjax']);
-    });
+    Route::get('/',                       [FinanceController::class, 'index']);
+    Route::post('/',                      [FinanceController::class, 'store']);
+    Route::get('/statistics/summary',     [FinanceController::class, 'statistics']);
+
+    // ✅ AQUÍ — antes de cualquier ruta con {id}
+    Route::post('/analyze',               [FinanceController::class, 'analyze']);
+
+    Route::get('/{id}',                   [FinanceController::class, 'show']);
+    Route::put('/{id}',                   [FinanceController::class, 'update']);
+    Route::delete('/{id}',                [FinanceController::class, 'destroy']);
+    Route::patch('/{id}/pay-installment', [FinanceController::class, 'payDebtInstallment']);
+    Route::post('/ajax',                  [FinanceController::class, 'storeAjax']);
+});
 
     // Rutas para que el frontend pueda llamar a /client/income, /client/expense, etc.
     Route::prefix('client')->group(function () {
@@ -118,6 +122,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('notificaciones/no-leidas',    [NotificationController::class, 'getMyUnreadCount']);
     Route::post('notificaciones/leer-todas',  [NotificationController::class, 'markAllMyRead']);
     Route::post('notificaciones/{id}/leer',   [NotificationController::class, 'markRead']);
+    Route::delete('notificaciones/todas', [NotificationController::class, 'destroyAll']);
+    Route::delete('notificaciones/{id}',  [NotificationController::class, 'destroy']);
 
     // Rutas con ID para administración o propósitos específicos
     Route::get('/notifications/{userId}',              [NotificationController::class, 'index']);

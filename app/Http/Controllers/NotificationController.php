@@ -73,7 +73,71 @@ class NotificationController extends Controller
         return response()->json(['success' => true, 'message' => 'Todas marcadas como leídas.']);
     }
 
-    // ── Notificaciones de un usuario específico (admin) ───────
+    // ── Marcar una notificación como leída ────────────────────
+    public function markRead($id)
+    {
+        $userId = $this->resolveUserId();
+
+        if (!$userId) {
+            return response()->json(['message' => 'No autenticado.'], 401);
+        }
+
+        $notification = Notification::where('user_id', $userId)->findOrFail($id);
+        $notification->update(['is_read' => true]);
+
+        return response()->json(['success' => true]);
+    }
+
+    // ── Eliminar UNA notificación ─────────────────────────────
+    public function destroy($id)
+    {
+        $userId = $this->resolveUserId();
+
+        if (!$userId) {
+            return response()->json(['message' => 'No autenticado.'], 401);
+        }
+
+        $notification = Notification::where('user_id', $userId)->find($id);
+
+        if (!$notification) {
+            return response()->json(['message' => 'Notificación no encontrada.'], 404);
+        }
+
+        $notification->delete();
+
+        $unreadCount = Notification::where('user_id', $userId)
+            ->where('is_read', false)
+            ->count();
+
+        return response()->json([
+            'success'      => true,
+            'message'      => 'Notificación eliminada.',
+            'unread_count' => $unreadCount,
+        ]);
+    }
+
+    // ── Eliminar TODAS las notificaciones ─────────────────────
+    public function destroyAll()
+    {
+        $userId = $this->resolveUserId();
+
+        if (!$userId) {
+            return response()->json(['message' => 'No autenticado.'], 401);
+        }
+
+        Notification::where('user_id', $userId)->delete();
+
+        return response()->json([
+            'success'      => true,
+            'message'      => 'Todas las notificaciones eliminadas.',
+            'unread_count' => 0,
+        ]);
+    }
+
+    // ════════════════════════════════════════════════════════
+    //  ADMIN — métodos para panel de administración
+    // ════════════════════════════════════════════════════════
+
     public function index($userId)
     {
         $notifications = Notification::with(['fromUser', 'recommendation'])
@@ -93,22 +157,6 @@ class NotificationController extends Controller
         ]);
     }
 
-    // ── Marcar una notificación como leída ────────────────────
-    public function markRead($id)
-    {
-        $userId = $this->resolveUserId();
-
-        if (!$userId) {
-            return response()->json(['message' => 'No autenticado.'], 401);
-        }
-
-        $notification = Notification::where('user_id', $userId)->findOrFail($id);
-        $notification->update(['is_read' => true]);
-
-        return response()->json(['success' => true]);
-    }
-
-    // ── Marcar TODAS como leídas para un usuario (admin) ─────
     public function markAllRead($userId)
     {
         Notification::where('user_id', $userId)
@@ -118,7 +166,6 @@ class NotificationController extends Controller
         return response()->json(['success' => true, 'message' => 'Todas marcadas como leídas.']);
     }
 
-    // ── Conteo no leídas para usuario específico (admin) ─────
     public function unreadCount($userId)
     {
         $count = Notification::where('user_id', $userId)
