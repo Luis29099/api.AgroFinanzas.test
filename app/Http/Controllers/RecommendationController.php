@@ -159,8 +159,55 @@ class RecommendationController extends Controller
     }
 
     public function toggleLike($id)
-    {
-        // Simulado — no hay tabla de likes aún
-        return response()->json(['liked' => true]);
+{
+    $user = Auth::guard('sanctum')->user();
+    if (!$user) {
+        return response()->json(['message' => 'No autenticado.'], 401);
     }
+
+    $recommendation = Recommendation::findOrFail($id);
+
+    $existing = \App\Models\RecommendationLike::where([
+        'user_id'           => $user->id,
+        'recommendation_id' => $id,
+    ])->first();
+
+    if ($existing) {
+        $existing->delete();
+        $liked = false;
+    } else {
+        \App\Models\RecommendationLike::create([
+            'user_id'           => $user->id,
+            'recommendation_id' => $id,
+        ]);
+        $liked = true;
+    }
+
+    return response()->json([
+        'liked'       => $liked,
+        'likes_count' => $recommendation->likes()->count(),
+    ]);
+}
+
+public function liked(Request $request)
+{
+    $user = Auth::guard('sanctum')->user();
+    if (!$user) {
+        return response()->json(['message' => 'No autenticado.'], 401);
+    }
+
+    $likedIds = \App\Models\RecommendationLike::where('user_id', $user->id)
+        ->pluck('recommendation_id');
+
+    $recommendations = Recommendation::with(['user'])
+        ->whereIn('id', $likedIds)
+        ->whereNull('parent_id')
+        ->latest()
+        ->get();
+
+    return response()->json([
+        'success' => true,
+        'liked_recommendations' => $recommendations,
+    ]);
+}
 }

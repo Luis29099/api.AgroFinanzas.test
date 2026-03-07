@@ -131,10 +131,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/notifications/{id}/read',           [NotificationController::class, 'markRead']);
     Route::patch('/notifications/{userId}/read-all',   [NotificationController::class, 'markAllRead']);
 
-    // ── RECOMENDACIONES / COMUNIDAD ─────────────────────────────
-    Route::get('recommendations',                  [RecommendationController::class, 'index']);
-    Route::post('recommendations',                 [RecommendationController::class, 'store']);
-    Route::get('recommendations/{recommendation}', [RecommendationController::class, 'show']);
+   // ── RECOMENDACIONES / COMUNIDAD ─────────────────────────────
+Route::get('recommendations',                  [RecommendationController::class, 'index']);
+Route::post('recommendations',                 [RecommendationController::class, 'store']);
+// ✅ ESTA DEBE IR ANTES de recommendations/{recommendation}
+Route::get('recommendations/liked',            [RecommendationController::class, 'liked']);
+Route::post('comments/{id}/like',              [RecommendationController::class, 'toggleLike']);
+Route::get('recommendations/{recommendation}', [RecommendationController::class, 'show']);
 
     // Alias para comentarios
     Route::get('comments',              [RecommendationController::class, 'index']);
