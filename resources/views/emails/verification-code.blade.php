@@ -1,147 +1,290 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Código de verificación</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #0f0f0f;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            color: #e0e0e0;
-        }
-        .wrapper {
-            max-width: 520px;
-            margin: 40px auto;
-            background: #1a1a1a;
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid rgba(138, 201, 38, 0.2);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-        }
-        .header {
-            background: linear-gradient(135deg, #1e3a0f, #2d5a1b);
-            padding: 36px 32px;
-            text-align: center;
-            border-bottom: 2px solid #8ac926;
-        }
-        .logo-text {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: #8ac926;
-            letter-spacing: 1px;
-        }
-        .logo-sub {
-            color: #aaa;
-            font-size: 0.82rem;
-            margin-top: 4px;
-        }
-        .body {
-            padding: 36px 32px;
-        }
-        .greeting {
-            font-size: 1rem;
-            color: #ccc;
-            margin-bottom: 16px;
-        }
-        .greeting span { color: #8ac926; font-weight: 700; }
-        .intro {
-            color: #999;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            margin-bottom: 28px;
-        }
-        .code-label {
-            text-align: center;
-            font-size: 0.78rem;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 12px;
-        }
-        .code-box {
-            background: #111;
-            border: 2px solid #8ac926;
-            border-radius: 12px;
-            padding: 22px;
-            text-align: center;
-            margin-bottom: 24px;
-            box-shadow: 0 0 20px rgba(138, 201, 38, 0.15);
-        }
-        .code {
-            font-size: 3rem;
-            font-weight: 800;
-            color: #8ac926;
-            letter-spacing: 12px;
-            text-shadow: 0 0 20px rgba(138, 201, 38, 0.4);
-            font-family: 'Courier New', monospace;
-        }
-        .expiry {
-            text-align: center;
-            color: #e67e22;
-            font-size: 0.82rem;
-            margin-bottom: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .warning {
-            background: rgba(231, 76, 60, 0.08);
-            border: 1px solid rgba(231, 76, 60, 0.2);
-            border-radius: 8px;
-            padding: 12px 16px;
-            color: #e74c3c;
-            font-size: 0.8rem;
-            line-height: 1.5;
-            margin-bottom: 24px;
-        }
-        .footer {
-            border-top: 1px solid #2a2a2a;
-            padding: 20px 32px;
-            text-align: center;
-            color: #444;
-            font-size: 0.75rem;
-            line-height: 1.6;
-        }
-        .footer a { color: #8ac926; text-decoration: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Código de verificación — AgroFinanzas</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #EFE3C4;
+    font-family: 'Source Sans 3', 'Segoe UI', sans-serif;
+    color: #1C2B1A;
+    padding: 40px 16px 60px;
+  }
+
+  .wrap {
+    max-width: 520px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow:
+      0 2px 0 #E6D5AA,
+      0 8px 32px rgba(107,61,20,.14),
+      0 24px 56px rgba(107,61,20,.08);
+  }
+
+  /* ── Franja decorativa superior ── */
+  .top-stripe {
+    height: 4px;
+    background: linear-gradient(90deg, #6B3D14 0%, #C8A96E 40%, #4A7C3F 70%, #1C2B1A 100%);
+  }
+
+  /* ── Header ── */
+  .header {
+    background: #1C2B1A;
+    padding: 36px 36px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Patrón geométrico de fondo sutil */
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 18px,
+        rgba(200,169,110,.04) 18px,
+        rgba(200,169,110,.04) 19px
+      );
+  }
+
+  .header-inner { position: relative; }
+
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .brand-icon {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    display: block;
+    border: 2px solid rgba(200,169,110,.4);
+    box-shadow: 0 2px 10px rgba(28,43,26,.35);
+  }
+
+  .brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #C8A96E;
+    letter-spacing: .5px;
+  }
+  .brand-sub {
+    font-size: .68rem;
+    color: rgba(200,169,110,.45);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 1px;
+  }
+
+  .header-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.45rem;
+    font-weight: 900;
+    color: #F5EDD6;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .header-sub {
+    font-size: .78rem;
+    color: rgba(245,237,214,.35);
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    font-weight: 600;
+  }
+
+  /* Línea dorada ── */
+  .gold-rule {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(200,169,110,.4), transparent);
+    margin: 28px 0 0;
+  }
+
+  /* ── Body ── */
+  .body {
+    padding: 36px 36px 28px;
+    background: #fff;
+  }
+
+  .greeting {
+    font-size: 1rem;
+    color: #1C2B1A;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .greeting span { color: #4A7C3F; }
+
+  .intro {
+    font-size: .88rem;
+    color: #6B3D14;
+    line-height: 1.7;
+    margin-bottom: 28px;
+    opacity: .75;
+  }
+
+  /* Código */
+  .code-label {
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #A0522D;
+    opacity: .6;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .code-wrap {
+    background: #F5EDD6;
+    border: 1px solid rgba(200,169,110,.5);
+    border-radius: 3px;
+    padding: 28px 20px 22px;
+    text-align: center;
+    margin-bottom: 6px;
+    position: relative;
+  }
+
+  /* Esquinas decorativas */
+  .code-wrap::before,
+  .code-wrap::after {
+    content: '';
+    position: absolute;
+    width: 12px; height: 12px;
+    border-color: #C8A96E;
+    border-style: solid;
+    opacity: .5;
+  }
+  .code-wrap::before { top: 8px; left: 8px; border-width: 1px 0 0 1px; }
+  .code-wrap::after  { bottom: 8px; right: 8px; border-width: 0 1px 1px 0; }
+
+  .code {
+    font-family: 'Courier New', 'DejaVu Sans Mono', monospace;
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: 14px;
+    color: #1C2B1A;
+    text-indent: 14px; /* compensa letter-spacing */
+    line-height: 1;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .code-expiry {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .72rem;
+    color: #A0522D;
+    background: rgba(160,82,45,.07);
+    border: 1px solid rgba(160,82,45,.18);
+    border-radius: 2px;
+    padding: 5px 12px;
+    font-weight: 600;
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #E6D5AA, transparent);
+    margin: 24px 0;
+  }
+
+  .note {
+    font-size: .82rem;
+    color: rgba(107,61,20,.55);
+    line-height: 1.65;
+    font-style: italic;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    background: #F5EDD6;
+    border-top: 1px solid #E6D5AA;
+    padding: 18px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .footer-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: .82rem;
+    font-weight: 700;
+    color: #6B3D14;
+  }
+  .footer-brand span { color: #4A7C3F; }
+
+  .footer-copy {
+    font-size: .68rem;
+    color: #A0522D;
+    opacity: .5;
+    text-align: right;
+    line-height: 1.5;
+  }
+</style>
 </head>
 <body>
-    <div class="wrapper">
-        <div class="header">
-            <div class="logo-text">🌱 AgroFinanzas</div>
-            <div class="logo-sub">Gestión financiera para el campo colombiano</div>
+  <div class="wrap">
+    <div class="top-stripe"></div>
+
+    <div class="header">
+      <div class="header-inner">
+        <div class="brand-row">
+          <img src="{{ asset('images/logonv.png') }}" alt="AgroFinanzas" class="brand-icon">
+          <div>
+            <div class="brand-name">AgroFinanzas</div>
+            <div class="brand-sub">Gestión financiera del campo</div>
+          </div>
         </div>
-
-        <div class="body">
-            <p class="greeting">Hola, <span>{{ $userName }}</span> 👋</p>
-            <p class="intro">
-                Gracias por registrarte en AgroFinanzas. Para activar tu cuenta,
-                ingresa el siguiente código de verificación en la pantalla que te
-                aparece en la aplicación:
-            </p>
-
-            <p class="code-label">Tu código de verificación</p>
-            <div class="code-box">
-                <div class="code">{{ $code }}</div>
-            </div>
-
-            <div class="expiry">
-                ⏱ Este código expira en <strong>15 minutos</strong>
-            </div>
-
-            <div class="warning">
-                <strong>⚠ Importante:</strong> Si no creaste una cuenta en AgroFinanzas,
-                ignora este correo. Nadie más puede usar este código.
-            </div>
-        </div>
-
-        <div class="footer">
-            © {{ date('Y') }} AgroFinanzas · Todos los derechos reservados<br>
-            Este es un correo automático, por favor no respondas a este mensaje.
-        </div>
+        <div class="header-title">Código de verificación</div>
+        <div class="header-sub">Activación de cuenta</div>
+        <div class="gold-rule"></div>
+      </div>
     </div>
+
+    <div class="body">
+      <p class="greeting">Hola, <span>{{ $userName }}</span> 👋</p>
+      <p class="intro">
+        Gracias por unirte a AgroFinanzas. Para activar tu cuenta,
+        ingresa el siguiente código en la pantalla de verificación de la aplicación.
+      </p>
+
+      <div class="code-label">Tu código de verificación</div>
+      <div class="code-wrap">
+        <span class="code">{{ $code }}</span>
+        <span class="code-expiry">
+          ⏱ Expira en <strong>15 minutos</strong>
+        </span>
+      </div>
+
+      <div class="divider"></div>
+      <p class="note">
+        Si no creaste una cuenta en AgroFinanzas, puedes ignorar este correo con total seguridad.
+        Nadie más puede utilizar este código.
+      </p>
+    </div>
+
+    <div class="footer">
+      <div class="footer-brand">Agro<span>Finanzas</span></div>
+      <div class="footer-copy">
+        © {{ date('Y') }} AgroFinanzas<br>
+        Correo automático · No responder
+      </div>
+    </div>
+  </div>
 </body>
 </html>
