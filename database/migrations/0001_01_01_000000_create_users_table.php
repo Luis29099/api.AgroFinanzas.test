@@ -6,33 +6,31 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email');
-            $table->string('password');
-            $table->string('birth_date');
-            $table->string('profile_photo')->nullable();
+        Schema::table('users', function (Blueprint $table) {
+            // Verificación de cuenta por email
+            if (!Schema::hasColumn('users', 'is_verified')) {
+                $table->boolean('is_verified')->default(false)->after('experience_years');
+            }
+            if (!Schema::hasColumn('users', 'verification_code')) {
+                $table->string('verification_code')->nullable()->after('is_verified');
+            }
+            if (!Schema::hasColumn('users', 'verification_expires_at')) {
+                $table->timestamp('verification_expires_at')->nullable()->after('verification_code');
+            }
 
-            $table->string('phone')->nullable();
-            $table->enum('gender', ['male', 'female', 'other'])->nullable();
-            $table->unsignedTinyInteger('experience_years')->nullable();
-            $table->timestamps();
+            // Activación / suspensión por admin
+            if (!Schema::hasColumn('users', 'is_active')) {
+                $table->boolean('is_active')->default(true)->after('is_verified');
+            }
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
-        Schema::dropIfExists('sessions');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn(['is_verified', 'verification_code', 'verification_expires_at', 'is_active']);
+        });
     }
 };
