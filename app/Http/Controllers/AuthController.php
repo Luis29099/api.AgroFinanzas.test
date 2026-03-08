@@ -226,46 +226,56 @@ public function sendDeleteCode(Request $request, $id)
     }
 
     // ── LOGIN ─────────────────────────────────────────────────
-    public function login(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'email'    => 'required|email',
-            'password' => 'required|string',
-        ], [
-            'email.required'    => 'El correo es obligatorio.',
-            'email.email'       => 'Formato de correo inválido.',
-            'password.required' => 'La contraseña es obligatoria.',
-        ]);
+    // ── LOGIN ─────────────────────────────────────────────────
+public function login(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'email'    => 'required|email',
+        'password' => 'required|string',
+    ], [
+        'email.required'    => 'El correo es obligatorio.',
+        'email.email'       => 'Formato de correo inválido.',
+        'password.required' => 'La contraseña es obligatoria.',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
-        }
-
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['success' => false, 'message' => 'Credenciales inválidas.'], 401);
-        }
-
-        if (!$user->is_verified) {
-            return response()->json([
-                'success'      => false,
-                'message'      => 'Debes verificar tu cuenta antes de ingresar.',
-                'not_verified' => true,
-                'user_id'      => $user->id,
-                'email'        => $user->email,
-            ], 403);
-        }
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Login exitoso',
-            'token'   => $token,
-            'user'    => $user,
-        ]);
+    if ($validator->fails()) {
+        return response()->json(['success' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
     }
+
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json(['success' => false, 'message' => 'Credenciales inválidas.'], 401);
+    }
+
+    // ── CUENTA INACTIVA (bloqueada por admin) ──────────────
+    if (!$user->is_active) {
+        return response()->json([
+            'success'     => false,
+            'message'     => 'Tu cuenta ha sido suspendida. Contacta al administrador para más información.',
+            'is_inactive' => true,
+        ], 403);
+    }
+
+    if (!$user->is_verified) {
+        return response()->json([
+            'success'      => false,
+            'message'      => 'Debes verificar tu cuenta antes de ingresar.',
+            'not_verified' => true,
+            'user_id'      => $user->id,
+            'email'        => $user->email,
+        ], 403);
+    }
+
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Login exitoso',
+        'token'   => $token,
+        'user'    => $user,
+    ]);
+}
 
     // ── ACTUALIZAR PERFIL ─────────────────────────────────────
     public function updateProfile(Request $request, $id)
