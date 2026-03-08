@@ -13,13 +13,11 @@ class User extends Authenticatable
     use HasFactory, Notifiable, ApiScopes, HasApiTokens;
 
     protected $fillable = [
-        'name', 'email', 'password', 'birth_date', 'profile_photo',
-        'phone', 'gender', 'experience_years',
-        'verification_code',
-        'verification_expires_at',
-        'is_verified',
-    ];
-
+    'name', 'email', 'password', 'birth_date', 'phone',
+    'gender', 'experience_years', 'profile_photo',
+    'is_verified', 'is_active',              // ← agregar estos
+    'verification_code', 'verification_expires_at',
+];
     protected $hidden = ['password'];
 
     protected $appends = ['profile_photo_url', 'role'];
