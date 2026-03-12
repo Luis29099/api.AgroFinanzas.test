@@ -18,20 +18,9 @@ class Recommendation extends Model
 
     protected $appends = ['content', 'replies_count', 'likes_count', 'liked_by_user'];
 
-    public function getContentAttribute()
-    {
-        return $this->text;
-    }
-
-    public function getRepliesCountAttribute()
-    {
-        return $this->replies()->count();
-    }
-
-    public function getLikesCountAttribute()
-    {
-        return $this->likes()->count();
-    }
+    public function getContentAttribute()       { return $this->text; }
+    public function getRepliesCountAttribute()  { return $this->replies()->count(); }
+    public function getLikesCountAttribute()    { return $this->likes()->count(); }
 
     public function getLikedByUserAttribute()
     {
@@ -44,10 +33,6 @@ class Recommendation extends Model
 
     public function user()    { return $this->belongsTo(User::class); }
     public function parent()  { return $this->belongsTo(Recommendation::class, 'parent_id'); }
-    public function replies() {
-        return $this->hasMany(Recommendation::class, 'parent_id')->with('user');
-    }
-    public function likes() {
-        return $this->hasMany(RecommendationLike::class);
-    }
+    public function replies() { return $this->hasMany(Recommendation::class, 'parent_id')->with('user'); }
+    public function likes()   { return $this->hasMany(RecommendationLike::class); }
 }
